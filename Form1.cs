@@ -62,6 +62,13 @@ namespace INFOIBV
             //==========================================================================================
             // TODO: include here your own code
             // example: create a negative image
+
+
+
+
+            // End of own code
+            // End of own code
+            //==========================================================================================
             for (int x = 0; x < InputImage.Size.Width; x++)
             {
                 for (int y = 0; y < InputImage.Size.Height; y++)
