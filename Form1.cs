@@ -75,8 +75,8 @@ namespace INFOIBV
                 for (int y = 0; y < InputImage.Size.Height; y++)
                 {
                     Color pixelColor = Image[x, y];                         // Get the pixel color at coordinate (x,y)
-                    Color updatedColor = Color.FromArgb(255 - pixelColor.R, 255 - pixelColor.G, 255 - pixelColor.B); // Negative image
-                    Image[x, y] = updatedColor;                             // Set the new pixel color at coordinate (x,y)
+                    var grayColor = (int) (pixelColor.R * 0.299 + pixelColor.G * 0.587 + pixelColor.B * 0.114);
+                    Image[x, y] = Color.FromArgb(grayColor, grayColor, grayColor);                             // Set the new pixel color at coordinate (x,y)
                     progressBar.PerformStep();                              // Increment progress bar
                 }
             }
@@ -95,7 +95,7 @@ namespace INFOIBV
                 }
             }
             
-            pictureBox2.Image = (Image)OutputImage;                         // Display output image
+            pictureBox2.Image = OutputImage;                         // Display output image
             progressBar.Visible = false;                                    // Hide progress bar
         }
         
