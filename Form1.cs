@@ -60,16 +60,9 @@ namespace INFOIBV
             }
 
             //==========================================================================================
-            // TODO: include here your own code
+            // Start of own code
             //==========================================================================================
-
-
-
-
-
-            //==========================================================================================
-            // example: create a negative image
-
+            
             for (int x = 0; x < InputImage.Size.Width; x++)
             {
                 for (int y = 0; y < InputImage.Size.Height; y++)
@@ -80,9 +73,9 @@ namespace INFOIBV
                     progressBar.PerformStep();                              // Increment progress bar
                 }
             }
+            Image = Image.Threshold(200, 0, 255);
 
             //==========================================================================================
-            // End of own code
             // End of own code
             //==========================================================================================
 
@@ -106,5 +99,46 @@ namespace INFOIBV
                 OutputImage.Save(saveImageDialog.FileName);                 // Save the output image
         }
 
+    }
+
+    public static class Operators {
+
+        /// <summary>
+        /// A threshold operation on a Color 2D array. Requires the colors to be in gray scale values, so that R, G and B have identical values.
+        /// </summary>
+        /// <param name="image">The Color 2D array to threshold</param>
+        /// <param name="threshold">Threshold minimum value, exclusive</param>
+        /// <param name="trueValue">The value that has to be assigned when the pixel value exceeds the threshold value</param>
+        /// <param name="falseValue">The value that has to be assigned when the pixel value does not exceed the threshold value</param>
+        /// <returns>A thresholded image</returns>
+        public static Color[,] Threshold(this Color[,] image, int threshold, int trueValue = 1, int falseValue = 0) {
+            return thresholdFunc(image, trueValue, falseValue, v => v > threshold);
+        }
+
+        /// <summary>
+        /// A threshold operation on a Color 2D array. Requires the colors to be in gray scale values, so that R, G and B have identical values.
+        /// </summary>
+        /// <param name="image">The Color 2D array to threshold</param>
+        /// <param name="minThreshold">Threshold minimum value, exclusive</param>
+        /// <param name="maxThreshold">Threshold maximum value, exclusive</param>
+        /// <param name="trueValue">The value that has to be assigned when the pixel value exceeds the threshold value</param>
+        /// <param name="falseValue">The value that has to be assigned when the pixel value does not exceed the threshold value</param>
+        /// <returns>A thresholded image</returns>
+        public static Color[,] ThresholdRange(this Color[,] image, int minThreshold, int maxThreshold, int trueValue = 1, int falseValue = 0) {
+            return thresholdFunc(image, trueValue, falseValue, v => v > minThreshold && v < maxThreshold);
+        }
+
+        private static Color[,] thresholdFunc(Color[,] image, int trueValue, int falseValue, Predicate<int> predicate) {
+            var minResultColor = Color.FromArgb(falseValue, falseValue, falseValue);
+            var maxResultColor = Color.FromArgb(trueValue, trueValue, trueValue);
+            var result = new Color[image.GetLength(0), image.GetLength(1)];
+            for (int x = 0; x < image.GetLength(0); x++)
+                for (int y = 0; y < image.GetLength(1); y++)
+                    if (predicate(image[x, y].R))
+                        result[x, y] = maxResultColor;
+                    else
+                        result[x, y] = minResultColor;
+            return result;
+        }
     }
 }
