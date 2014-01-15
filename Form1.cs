@@ -138,12 +138,25 @@ namespace INFOIBV
         /// <param name="predicate">Predicate for a pixel value that determines whether the pixel satisfies the threshold or not</param>
         /// <returns>A thresholded image</returns>
         private static Color[,] thresholdFunc(Color[,] image, int trueValue, int falseValue, Predicate<int> predicate) {
+            return colorThresholdFunc(image, trueValue, falseValue, color => predicate(color.R));
+        }
+
+        /// <summary>
+        /// A threshold operation on a Color 2D array. This is the generic threshold function that can be specialized to a specific function.
+        /// </summary>
+        /// <param name="image">The Color 2D array to threshold</param>
+        /// <param name="threshold">Threshold minimum value, exclusive</param>
+        /// <param name="trueValue">The value that has to be assigned when the pixel value exceeds the threshold value</param>
+        /// <param name="falseValue">The value that has to be assigned when the pixel value does not exceed the threshold value</param>
+        /// <param name="predicate">Predicate for a pixel value that determines whether the pixel satisfies the threshold or not</param>
+        /// <returns>A thresholded image</returns>
+        private static Color[,] colorThresholdFunc(Color[,] image, int trueValue, int falseValue, Predicate<Color> predicate) {
             var minResultColor = Color.FromArgb(falseValue, falseValue, falseValue);
             var maxResultColor = Color.FromArgb(trueValue, trueValue, trueValue);
             var result = new Color[image.GetLength(0), image.GetLength(1)];
             for (int x = 0; x < image.GetLength(0); x++)
                 for (int y = 0; y < image.GetLength(1); y++)
-                    if (predicate(image[x, y].R))
+                    if (predicate(image[x, y]))
                         result[x, y] = maxResultColor;
                     else
                         result[x, y] = minResultColor;
