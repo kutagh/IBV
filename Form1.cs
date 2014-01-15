@@ -128,6 +128,15 @@ namespace INFOIBV
             return thresholdFunc(image, trueValue, falseValue, v => v > minThreshold && v < maxThreshold);
         }
 
+        /// <summary>
+        /// A threshold operation on a Color 2D array. Requires the colors to be in gray scale values, so that R, G and B have identical values. This is the generic threshold function that can be specialized to a specific function.
+        /// </summary>
+        /// <param name="image">The Color 2D array to threshold</param>
+        /// <param name="threshold">Threshold minimum value, exclusive</param>
+        /// <param name="trueValue">The value that has to be assigned when the pixel value exceeds the threshold value</param>
+        /// <param name="falseValue">The value that has to be assigned when the pixel value does not exceed the threshold value</param>
+        /// <param name="predicate">Predicate for a pixel value that determines whether the pixel satisfies the threshold or not</param>
+        /// <returns>A thresholded image</returns>
         private static Color[,] thresholdFunc(Color[,] image, int trueValue, int falseValue, Predicate<int> predicate) {
             var minResultColor = Color.FromArgb(falseValue, falseValue, falseValue);
             var maxResultColor = Color.FromArgb(trueValue, trueValue, trueValue);
