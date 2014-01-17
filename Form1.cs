@@ -28,8 +28,11 @@ namespace INFOIBV {
 
         private void applyButton_Click(object sender, EventArgs e) {
             if (InputImage == null) return;                                 // Get out if no input image
-            if (OutputImage != null) OutputImage.Dispose();                 // Reset output image
-            Color[,] Image = new Color[InputImage.Size.Width, InputImage.Size.Height]; // Create array to speed-up operations (Bitmap functions are very slow)
+            if (OutputImage != null) {
+                OutputImage.Dispose();                 // Reset output image
+                OutputImage = null;
+            }
+            Color[,] image = new Color[InputImage.Size.Width, InputImage.Size.Height]; // Create array to speed-up operations (Bitmap functions are very slow)
 
             // Setup progress bar
             progressBar.Visible = true;
@@ -41,7 +44,7 @@ namespace INFOIBV {
             // Copy input Bitmap to array            
             for (int x = 0; x < InputImage.Size.Width; x++) {
                 for (int y = 0; y < InputImage.Size.Height; y++) {
-                    Image[x, y] = InputImage.GetPixel(x, y);                // Set pixel color in array at (x,y)
+                    image[x, y] = InputImage.GetPixel(x, y);                // Set pixel color in array at (x,y)
                 }
             }
 
@@ -50,29 +53,25 @@ namespace INFOIBV {
             //==========================================================================================
 
             
-            Image = Image.ApplyKernel(Kernels.XDerivateKernel, Functors.Sum);
+            image = image.ApplyKernel(Kernels.XDerivateKernel, Functors.KernelSampleToValue.Sum);
+            progressBar.Increment(progressBar.Maximum / 2);
             goto Skip;
+            
             // Gray scale
-            for (int x = 0; x < InputImage.Size.Width; x++) {
-                for (int y = 0; y < InputImage.Size.Height; y++) {
-                    Color pixelColor = Image[x, y];                         // Get the pixel color at coordinate (x,y)
-                    var grayColor = (int) (pixelColor.R * 0.299 + pixelColor.G * 0.587 + pixelColor.B * 0.114);
-                    Image[x, y] = Color.FromArgb(grayColor, grayColor, grayColor);                             // Set the new pixel color at coordinate (x,y)
-                    progressBar.PerformStep();                              // Increment progress bar
-                }
-            }
+            image = image.Transform(Functors.ColorToColor.ToGrayScale);
             // Negative threshold
-            Image = Image.Threshold(200, 0, 255);
-            Skip:
+            image = image.Threshold(200, 0, 255);
+            
             //==========================================================================================
             // End of own code
             //==========================================================================================
+            Skip:
 
             // Copy array to output Bitmap
             OutputImage = new Bitmap(InputImage.Size.Width, InputImage.Size.Height); // Create new output image
             for (int x = 0; x < InputImage.Size.Width; x++) {
                 for (int y = 0; y < InputImage.Size.Height; y++) {
-                    OutputImage.SetPixel(x, y, Image[x, y]);               // Set the pixel color at coordinate (x,y)
+                    OutputImage.SetPixel(x, y, image[x, y]);               // Set the pixel color at coordinate (x,y)
                 }
             }
 
