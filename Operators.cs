@@ -84,8 +84,9 @@ namespace INFOIBV {
         /// <param name="image">Color 2D array representing the image</param>
         /// <param name="kernel">Kernel to use to generate a sample for the functor. Must have odd size or weird behavior can happen</param>
         /// <param name="functor">Functor that transforms a sample into a single value in the range of [0, 255]</param>
+        /// <param name="defaultValue">Value used when the sample uses pixels outside of the image boundary. Defaults to zero</param>
         /// <returns>A Color 2D array representing the image after applying the kernel</returns>
-        public static Color[,] ApplyKernel(this Color[,] image, double[,] kernel, Func<double[,], double> functor) {
+        public static Color[,] ApplyKernel(this Color[,] image, double[,] kernel, Func<double[,], double> functor, double defaultValue = 0) {
             var result = new Color[image.GetLength(0), image.GetLength(1)];
             int middleX = kernel.GetLength(0) / 2, middleY = kernel.GetLength(1) / 2;
             for (int x = 0; x < image.GetLength(0); x++)
@@ -95,8 +96,9 @@ namespace INFOIBV {
                         for (int dy = 0; dy < kernel.GetLength(1); dy++){
                             int curX = x + dx - middleX, curY = y + dy - middleY;
                             if (curX < 0 || curX >= image.GetLength(0) || curY < 0 || curY >= image.GetLength(1))
-                                continue;
-                            section[dx, dy] = image[x + dx - middleX, y + dy - middleY].R * kernel[dx, dy];
+                                section[dx, dy] = defaultValue;
+                            else
+                                section[dx, dy] = image[x + dx - middleX, y + dy - middleY].R * kernel[dx, dy];
                         }
                     var res = (int)functor(section);
                     result[x, y] = Color.FromArgb(res, res, res);
