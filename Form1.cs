@@ -49,16 +49,8 @@ namespace INFOIBV {
             // Start of own code
             //==========================================================================================
 
-            var yDerivateKernel = new double[1, 3] {  { -0.5, 0, 0.5 } };
-            var xDerivateKernel = new double[3, 1] { { -0.5 }, { 0 }, { 0.5 } };
-            Func<double[,], double> summer = section => {
-                double result = 0;
-                for (int x = 0; x < section.GetLength(0); x++)
-                    for (int y = 0; y < section.GetLength(1); y++)
-                        result += section[x, y];
-                return result + 127;
-            };
-            Image = Image.ApplyKernel(xDerivateKernel, summer);
+            
+            Image = Image.ApplyKernel(Kernels.XDerivateKernel, Functors.Sum);
             goto Skip;
             // Gray scale
             for (int x = 0; x < InputImage.Size.Width; x++) {

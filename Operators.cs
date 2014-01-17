@@ -78,6 +78,13 @@ namespace INFOIBV {
             return result;
         }
 
+        /// <summary>
+        /// Applies an image processing kernel to a Color 2D gray scale array, with a gray scale result.
+        /// </summary>
+        /// <param name="image">Color 2D array representing the image</param>
+        /// <param name="kernel">Kernel to use to generate a sample for the functor. Must have odd size or weird behavior can happen</param>
+        /// <param name="functor">Functor that transforms a sample into a single value in the range of [0, 255]</param>
+        /// <returns>A Color 2D array representing the image after applying the kernel</returns>
         public static Color[,] ApplyKernel(this Color[,] image, double[,] kernel, Func<double[,], double> functor) {
             var result = new Color[image.GetLength(0), image.GetLength(1)];
             int middleX = kernel.GetLength(0) / 2, middleY = kernel.GetLength(1) / 2;
