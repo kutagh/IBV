@@ -77,5 +77,24 @@ namespace INFOIBV {
                     result[x, y] = op(first[x, y], second[x, y]);
             return result;
         }
+
+        public static Color[,] ApplyKernel(this Color[,] image, double[,] kernel, Func<double[,], double> functor) {
+            var result = new Color[image.GetLength(0), image.GetLength(1)];
+            int middleX = kernel.GetLength(0) / 2, middleY = kernel.GetLength(1) / 2;
+            for (int x = 0; x < image.GetLength(0); x++)
+                for (int y = 0; y < image.GetLength(1); y++) {
+                    var section = new double[kernel.GetLength(0), kernel.GetLength(1)];
+                    for (int dx = 0; dx < kernel.GetLength(0); dx++)
+                        for (int dy = 0; dy < kernel.GetLength(1); dy++){
+                            int curX = x + dx - middleX, curY = y + dy - middleY;
+                            if (curX < 0 || curX >= image.GetLength(0) || curY < 0 || curY >= image.GetLength(1))
+                                continue;
+                            section[dx, dy] = image[x + dx - middleX, y + dy - middleY].R * kernel[dx, dy];
+                        }
+                    var res = (int)functor(section);
+                    result[x, y] = Color.FromArgb(res, res, res);
+                }
+            return result;
+        }
     }
 }

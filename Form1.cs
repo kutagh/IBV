@@ -49,6 +49,18 @@ namespace INFOIBV {
             // Start of own code
             //==========================================================================================
 
+            var yDerivateKernel = new double[1, 3] {  { -0.5, 0, 0.5 } };
+            var xDerivateKernel = new double[3, 1] { { -0.5 }, { 0 }, { 0.5 } };
+            Func<double[,], double> summer = section => {
+                double result = 0;
+                for (int x = 0; x < section.GetLength(0); x++)
+                    for (int y = 0; y < section.GetLength(1); y++)
+                        result += section[x, y];
+                return result + 127;
+            };
+            Image = Image.ApplyKernel(xDerivateKernel, summer);
+            goto Skip;
+            // Gray scale
             for (int x = 0; x < InputImage.Size.Width; x++) {
                 for (int y = 0; y < InputImage.Size.Height; y++) {
                     Color pixelColor = Image[x, y];                         // Get the pixel color at coordinate (x,y)
@@ -57,9 +69,9 @@ namespace INFOIBV {
                     progressBar.PerformStep();                              // Increment progress bar
                 }
             }
+            // Negative threshold
             Image = Image.Threshold(200, 0, 255);
-
-
+            Skip:
             //==========================================================================================
             // End of own code
             //==========================================================================================
