@@ -38,7 +38,7 @@ namespace INFOIBV {
         /// <param name="falseValue">The value that has to be assigned when the pixel value does not exceed the threshold value</param>
         /// <param name="predicate">Predicate for a pixel value that determines whether the pixel satisfies the threshold or not</param>
         /// <returns>A thresholded image</returns>
-        public static Color[,] ThresholdFunc(Color[,] image, int trueValue, int falseValue, Predicate<int> predicate) {
+        public static Color[,] ThresholdFunc(this Color[,] image, int trueValue, int falseValue, Predicate<int> predicate) {
             return ColorThresholdFunc(image, trueValue, falseValue, color => predicate(color.R));
         }
 
@@ -51,16 +51,39 @@ namespace INFOIBV {
         /// <param name="falseValue">The value that has to be assigned when the pixel value does not exceed the threshold value</param>
         /// <param name="predicate">Predicate for a pixel value that determines whether the pixel satisfies the threshold or not</param>
         /// <returns>A thresholded image</returns>
-        public static Color[,] ColorThresholdFunc(Color[,] image, int trueValue, int falseValue, Predicate<Color> predicate) {
+        public static Color[,] ColorThresholdFunc(this Color[,] image, int trueValue, int falseValue, Predicate<Color> predicate) {
             var minResultColor = Color.FromArgb(falseValue, falseValue, falseValue);
             var maxResultColor = Color.FromArgb(trueValue, trueValue, trueValue);
+            return Transform(image, c => predicate(c) ? maxResultColor : minResultColor);
+        }
+
+        /// <summary>
+        /// Transform individual pixels in a Color 2D array according to a transformation function.
+        /// </summary>
+        /// <param name="image">A Color 2D image</param>
+        /// <param name="transformer">Transformation function that transforms a color into a new color</param>
+        /// <returns>A transformed gray scale Color 2D array of the image</returns>
+        public static Color[,] Transform(this Color[,] image, Func<Color, Color> transformer) {
             var result = new Color[image.GetLength(0), image.GetLength(1)];
             for (int x = 0; x < image.GetLength(0); x++)
                 for (int y = 0; y < image.GetLength(1); y++)
-                    result[x, y] = predicate(image[x, y]) ? maxResultColor : minResultColor;
+                    result[x, y] = transformer(image[x, y]); ;
             return result;
         }
 
+        /// <summary>
+        /// Transform individual pixels in a gray scale Color 2D array according to a transformation function.
+        /// </summary>
+        /// <param name="image">A gray scale Color 2D image</param>
+        /// <param name="transformer">Transformation function that transforms a gray value to a new gray value</param>
+        /// <returns>A transformed gray scale Color 2D array of the image</returns>
+        public static Color[,] Transform(this Color[,] image, Func<int, int> transformer) {
+            return Transform(image, c => {
+                var transformed = transformer(c.R);
+                return Color.FromArgb(transformed, transformed, transformed);
+            });
+        }
+        
         /// <summary>
         /// Generic operator function that combines two images into a new image.
         /// </summary>
@@ -105,5 +128,6 @@ namespace INFOIBV {
                 }
             return result;
         }
+
     }
 }
