@@ -51,21 +51,34 @@ namespace INFOIBV {
             //==========================================================================================
             // Start of own code
             //==========================================================================================
+            goto NegativeThreshold;
 
-            
-            image = image.ApplyKernel(Kernels.XDerivateKernel, Functors.KernelSampleToValue.Sum);
-            progressBar.Increment(progressBar.Maximum / 2);
-            goto Skip;
-            
+        XDerivate:
+            image = image.ApplyKernel(Kernels.XDerivateKernel, Functors.KernelSampleToValue.Sum, Functors.DoubleToDouble.Multiply);
+
+        Grayscale:
             // Gray scale
             image = image.Transform(Functors.ColorToColor.ToGrayScale);
+            //goto End;
+            goto Dilate;
+
+        NegativeThreshold:
             // Negative threshold
             image = image.Threshold(200, 0, 255);
-            
+            goto Erode;
+
+        Dilate:
+            image = image.Dilate(Kernels.CrossElement3x3);
+            goto End;
+
+        Erode:
+            image = image.Erode(Kernels.CrossElement3x3);
+            goto Dilate;
+
+        End:
             //==========================================================================================
             // End of own code
             //==========================================================================================
-            Skip:
 
             // Copy array to output Bitmap
             OutputImage = new Bitmap(InputImage.Size.Width, InputImage.Size.Height); // Create new output image

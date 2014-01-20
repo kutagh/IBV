@@ -102,7 +102,7 @@ namespace INFOIBV {
         }
 
         /// <summary>
-        /// Applies an image processing kernel to a Color 2D gray scale array, with a gray scale result.
+        /// Applies an image processing kernel to a Color 2D gray scale array, with a gray scale result. Uses a default multiplication function when applying the kernel to get a sample.
         /// </summary>
         /// <param name="image">Color 2D array representing the image</param>
         /// <param name="kernel">Kernel to use to generate a sample for the functor. Must have odd size or weird behavior can happen</param>
@@ -110,6 +110,20 @@ namespace INFOIBV {
         /// <param name="defaultValue">Value used when the sample uses pixels outside of the image boundary. Defaults to zero</param>
         /// <returns>A Color 2D array representing the image after applying the kernel</returns>
         public static Color[,] ApplyKernel(this Color[,] image, double[,] kernel, Func<double[,], double> functor, double defaultValue = 0) {
+            Func<double, double, double> transformator = Functors.DoubleToDouble.Multiply;
+            return ApplyKernel(image, kernel, functor, transformator, defaultValue);
+        }
+
+        /// <summary>
+        /// Applies an image processing kernel to a Color 2D gray scale array, with a gray scale result.
+        /// </summary>
+        /// <param name="image">Color 2D array representing the image</param>
+        /// <param name="kernel">Kernel to use to generate a sample for the functor. Must have odd size or weird behavior can happen</param>
+        /// <param name="functor">Functor that transforms a sample into a single value in the range of [0, 255]</param>
+        /// <param name="transformator">Functor that takes a value from the image and the corresponding kernel value and gives a result.</param>
+        /// <param name="defaultValue">Value used when the sample uses pixels outside of the image boundary. Defaults to zero</param>
+        /// <returns>A Color 2D array representing the image after applying the kernel</returns>
+        public static Color[,] ApplyKernel(this Color[,] image, double[,] kernel, Func<double[,], double> functor, Func<double, double, double> transformator, double defaultValue = 0) {
             var result = new Color[image.GetLength(0), image.GetLength(1)];
             int middleX = kernel.GetLength(0) / 2, middleY = kernel.GetLength(1) / 2;
             for (int x = 0; x < image.GetLength(0); x++)
@@ -121,12 +135,32 @@ namespace INFOIBV {
                             if (curX < 0 || curX >= image.GetLength(0) || curY < 0 || curY >= image.GetLength(1))
                                 section[dx, dy] = defaultValue;
                             else
-                                section[dx, dy] = image[x + dx - middleX, y + dy - middleY].R * kernel[dx, dy];
+                                section[dx, dy] = transformator(image[x + dx - middleX, y + dy - middleY].R, kernel[dx, dy]);
                         }
                     var res = (int)functor(section);
                     result[x, y] = Color.FromArgb(res, res, res);
                 }
             return result;
+        }
+
+        /// <summary>
+        /// Dilate an image using a given structuring element.
+        /// </summary>
+        /// <param name="image">Image to dilate</param>
+        /// <param name="structuringElement">Structuring element to use</param>
+        /// <returns>A dilated image</returns>
+        public static Color[,] Dilate(this Color[,] image, double[,] structuringElement) {
+            return ApplyKernel(image, structuringElement, Functors.KernelSampleToValue.Max, Functors.DoubleToDouble.Threshold(double.MinValue), double.MinValue);
+        }
+
+        /// <summary>
+        /// Erode an image using a given structuring element.
+        /// </summary>
+        /// <param name="image">Image to erode</param>
+        /// <param name="structuringElement">Structuring element to use</param>
+        /// <returns>An eroded image</returns>
+        public static Color[,] Erode(this Color[,] image, double[,] structuringElement) {
+            return ApplyKernel(image, structuringElement, Functors.KernelSampleToValue.Min, Functors.DoubleToDouble.Threshold(double.MaxValue), double.MaxValue);
         }
 
     }

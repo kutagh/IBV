@@ -38,5 +38,10 @@ namespace INFOIBV {
                 return Color.FromArgb(grayColor, grayColor, grayColor);
             };
         }
+
+        public static class DoubleToDouble {
+            public static Func<double, double, double> Multiply = (a, b) => a * b;
+            public static Func<double, double, double> Threshold(double v) { return (a, b) => b == 1 ? a : v; }
+        }
     }
 }
