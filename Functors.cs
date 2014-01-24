@@ -33,9 +33,16 @@ namespace INFOIBV {
             };
         }
         public static class ColorToColor {
+
             public static Func<Color, Color> ToGrayScale = c => {
                 var grayColor = (int) (c.R * 0.299 + c.G * 0.587 + c.B * 0.114);
                 return Color.FromArgb(grayColor, grayColor, grayColor);
+            };
+
+            // Refactor this
+            public static Func<Color, Color> ToGrayScaleGreen = c => {
+                var grayColor = (int)( c.G  );
+                return Color.FromArgb( grayColor, grayColor, grayColor );
             };
         }
 
