@@ -260,7 +260,7 @@ namespace INFOIBV {
         /// </summary>
         /// <param name="image">Image to process</param>
         /// <returns>Dictionary with area per color</returns>
-        public static Dictionary<Color, int> Area(this Color[,] image) {
+        public static Dictionary<Color, int> Areas(this Color[,] image) {
             var result = new Dictionary<Color, int>();
             var background = Color.FromArgb(0,0,0);
             for (int x = 0; x < image.GetLength(0); x++)
@@ -357,13 +357,13 @@ namespace INFOIBV {
         /// </summary>
         /// <param name="image">A labeled image to process</param>
         /// <returns>A Dictionary with perimeter per color label</returns>
-        public static Dictionary<Color, int> Perimeter(this Color[,] image) {
+        public static Dictionary<Color, int> Perimeters(this Color[,] image) {
             return image.ChainCode().ToDictionary(x => x.Key, x => x.Value.Count());
         }
 
         public static Dictionary<Color, Tuple<double, double>> Centoids(this Color[,] image) {
 
-            Dictionary<Color, int> area = image.Area();
+            Dictionary<Color, int> area = image.Areas();
 
             Dictionary<Color, Tuple<double,double>> dict = new Dictionary<Color, Tuple<double,double>>();
 
