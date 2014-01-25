@@ -363,7 +363,7 @@ namespace INFOIBV {
 
         static Dictionary<Color, Tuple<double, double>> Centoids(Color[,] image) {
 
-            Dictionary<Color, int> area = image.Area();
+            Dictionary<Color, int> area = image.Areas();
 
             Dictionary<Color, Tuple<double,double>> dict = new Dictionary<Color, Tuple<double,double>>();
 
