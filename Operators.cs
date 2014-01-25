@@ -412,5 +412,28 @@ namespace INFOIBV {
 
             return result;
         }
+
+        public static Dictionary<Color, Tuple<int, int>> BoundaryPixels(this Color[,] image) {
+
+            Dictionary<Color, Tuple<int, int>> result = new Dictionary<Color, Tuple<int, int>>();
+
+            for ( int i = 0; i < image.GetLength(0); i++ ) 
+                for ( int j = 0; j < image.GetLength(1); j++ )
+                    if ( image[i, j] != Color.FromArgb(0, 0, 0) && !result.ContainsKey(image[i,j] ))
+                        result.Add(image[i,j], new Tuple<int,int>(i,j));
+
+            return result;
+        }
+
+        void BoundingBox(this Color[,] image) {
+
+            Dictionary<Color, Tuple<int, int>> boundaries = image.BoundaryPixels();
+            Dictionary<Color, int> result = new Dictionary<Color,int>();
+
+            foreach ( Color key in boundaries.Keys ) {
+                
+            }
+            
+        }
     }
 }
