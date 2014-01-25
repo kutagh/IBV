@@ -173,12 +173,19 @@ namespace INFOIBV {
             // Copy to a separate array to prevent modifying the original image.
             Color[,] result = new Color[image.GetLength(0), image.GetLength(1)];
             Array.Copy(image, result, image.Length);
-            int n = 0;
+            int gray = 2, r = 0, g = 0, b = 0;
             for (int i = 0; i < result.GetLength(0); i++) {
                 for (int j = 0; j < result.GetLength(1); j++) {
-                    if (result[i, j].R == 1) { 
-                        int greyVal = n++ % 254 + 2; // Just in case...
-                        floodfill(result, i, j, Color.FromArgb(greyVal, greyVal, greyVal));
+                    if (result[i, j].R == 1) {
+                        if (gray > 0) gray++;
+                        if (r > 0) r++;
+                        if (gray == 256) { gray = 0; r = 2; }
+                        if (g > 0) g++;
+                        if (r == 256) { r = 0; g = 2; }
+                        if (b > 0) b++;
+                        if (g == 256) { g = 0; b = 2; }
+
+                        floodfill(result, i, j, gray > 0 ? Color.FromArgb(gray, gray, gray) : Color.FromArgb(r, g, b));
                     }
                 }
             }
