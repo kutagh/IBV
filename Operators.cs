@@ -413,7 +413,7 @@ namespace INFOIBV {
             return result;
         }
 
-        public static Dictionary<Color, Tuple<int, int>> BoundaryPixels(this Color[,] image) {
+        public static Dictionary<Color, Tuple<int, int>> FirstPixels(this Color[,] image) {
 
             Dictionary<Color, Tuple<int, int>> result = new Dictionary<Color, Tuple<int, int>>();
 
@@ -425,13 +425,25 @@ namespace INFOIBV {
             return result;
         }
 
-        void BoundingBox(this Color[,] image) {
+        public static void BoundingBox(this Color[,] image) {
 
-            Dictionary<Color, Tuple<int, int>> boundaries = image.BoundaryPixels();
-            Dictionary<Color, int> result = new Dictionary<Color,int>();
+            Dictionary<Color, Tuple<int, int>> firstPixels = image.FirstPixels();
+            Dictionary<Color, int[]> chainCode = image.ChainCode();
+            Dictionary<Color, Tuple<int,int>> borders = new Dictionary<Color, Tuple<int,int>>();
 
-            foreach ( Color key in boundaries.Keys ) {
-                
+            foreach ( Color key in chainCode.Keys ) {
+
+                int[] value = chainCode[key];
+                Tuple<int, int> currentPixel = firstPixels[key];
+                borders.Add(key, currentPixel);
+
+                for ( int i = 0; i < value.Length; i++ ) {
+                    currentPixel = translate(currentPixel.Item1, currentPixel.Item2, value[i]);
+                    borders.Add(key, currentPixel);
+                }
+
+
+
             }
             
         }
