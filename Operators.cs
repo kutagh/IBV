@@ -263,11 +263,13 @@ namespace INFOIBV {
         public static Dictionary<Color, int> Areas(this Color[,] image) {
             var result = new Dictionary<Color, int>();
             var background = Color.FromArgb(0,0,0);
-            for (int x = 0; x < image.GetLength(0); x++)
-                for (int y = 0; y < image.GetLength(1); y++) {
+            var temp = new Color[image.GetLength(0), image.GetLength(1)];
+            Array.Copy(image, temp, image.Length);
+            for (int x = 0; x < temp.GetLength(0); x++)
+                for (int y = 0; y < temp.GetLength(1); y++) {
                     // Only process colors we haven't encountered yet.
-                    if (image[x, y] == background || image[x,y].A == 128 || result.ContainsKey(image[x,y])) continue;
-                    Color color = image[x, y];
+                    if (temp[x, y] == background || result.ContainsKey(temp[x,y])) continue;
+                    Color color = temp[x, y];
                     int total = 0;
                     var queue = new Queue<Tuple<int, int>>();
                     queue.Enqueue(new Tuple<int, int>(x, y));
@@ -275,10 +277,10 @@ namespace INFOIBV {
                         var current = queue.Dequeue();
                         int dx = current.Item1;
                         int dy = current.Item2;
-                        if (dx < 0 || dx >= image.GetLength(0) || dy < 0 || dy >= image.GetLength(1) 
-                            || image[dx, dy].ToArgb() != color.ToArgb()) continue;
+                        if (dx < 0 || dx >= temp.GetLength(0) || dy < 0 || dy >= temp.GetLength(1) 
+                            || temp[dx, dy] != color) continue;
                         total++;
-                        image[dx, dy] = Color.FromArgb(128, color);
+                        temp[dx, dy] = background;
                         queue.Enqueue(new Tuple<int, int>(dx + 1, dy));
                         queue.Enqueue(new Tuple<int, int>(dx - 1, dy));
                         queue.Enqueue(new Tuple<int, int>(dx, dy + 1));
