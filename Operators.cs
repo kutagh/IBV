@@ -127,18 +127,18 @@ namespace INFOIBV {
         public static Color[,] ApplyKernel(this Color[,] image, double[,] kernel, Func<double[,], double> functor, Func<double, double, double> transformator, double defaultValue = 0) {
             var result = new Color[image.GetLength(0), image.GetLength(1)];
             int middleX = kernel.GetLength(0) / 2, middleY = kernel.GetLength(1) / 2;
-            for (int x = 0; x < image.GetLength(0); x++)
+            for (int x = 0; x < image.GetLength(0); x++) // Image iteration
                 for (int y = 0; y < image.GetLength(1); y++) {
                     var section = new double[kernel.GetLength(0), kernel.GetLength(1)];
-                    for (int dx = 0; dx < kernel.GetLength(0); dx++)
+                    for (int dx = 0; dx < kernel.GetLength(0); dx++) // Kernel iteration
                         for (int dy = 0; dy < kernel.GetLength(1); dy++) {
-                            int curX = x + dx - middleX, curY = y + dy - middleY;
+                            int curX = x + dx - middleX, curY = y + dy - middleY; // Shorthand for current position
                             if (curX < 0 || curX >= image.GetLength(0) || curY < 0 || curY >= image.GetLength(1))
-                                section[dx, dy] = defaultValue;
-                            else
+                                section[dx, dy] = defaultValue; // Outside of image boundary, use default value that shouldn't interfere with kernel operation
+                            else // Apply transformator on image grayscale value and kernel value
                                 section[dx, dy] = transformator(image[x + dx - middleX, y + dy - middleY].R, kernel[dx, dy]);
                         }
-                    var res = (int) functor(section);
+                    var res = (int) functor(section); // Kernel has been applied on the pixel, now computing result for said pixel
                     result[x, y] = Color.FromArgb(res, res, res);
                 }
             return result;
