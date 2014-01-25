@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -239,16 +240,12 @@ namespace INFOIBV {
                         q.Enqueue(new Tuple<int, int>(dr, dc));
                         image[dr, dc] = color; // Mark as visited
                     }
-
                 }
-
             }
-
-
         }
 
         /// <summary>
-        /// Converts an image into a dictionary of areas. Warning: Changes alpha from 255 to 128...
+        /// Converts a labeled image into a dictionary of areas. Warning: Changes alpha from 255 to 128...
         /// </summary>
         /// <param name="image">Image to process</param>
         /// <returns>Dictionary with area per color</returns>
@@ -267,9 +264,6 @@ namespace INFOIBV {
                         var current = queue.Dequeue();
                         int dx = current.Item1;
                         int dy = current.Item2;
-                        var ic = image[dx, dy].ToArgb();
-                        var cc = color.ToArgb();
-                        var lol = ic + cc;
                         if (dx < 0 || dx >= image.GetLength(0) || dy < 0 || dy >= image.GetLength(1) 
                             || image[dx, dy].ToArgb() != color.ToArgb()) continue;
                         total++;
@@ -285,5 +279,76 @@ namespace INFOIBV {
 
             return result;
         }
+
+        /// <summary>
+        /// Generates a chain code for every object in the labeled image.
+        /// </summary>
+        /// <param name="image">A labeled image to process</param>
+        /// <returns>A Dictionary with chain codes per color label</returns>
+        public static Dictionary<Color, int[]> ChainCode(this Color[,] image) {
+            var result = new Dictionary<Color, int[]>();
+            var background = Color.FromArgb(0,0,0);
+            for (int x = 0; x < image.GetLength(0); x++)
+                for (int y = 0; y < image.GetLength(1); y++) {
+                    // Only process colors we haven't encountered yet.
+                    if (image[x, y] == background || result.ContainsKey(image[x, y])) continue;
+                    Color color = image[x, y];
+                    var chainCode = new Queue<int>();
+                    int orientation = 0;
+                    int dx = x, dy = y;
+                    // We have the top-left pixel of the image, so no pixel to the left or top of it.
+                    if (x < 255 && image[x + 1, y] == color) {
+                        dx++;
+                        chainCode.Enqueue(0);
+                    }
+                    else if (y < 255 && image[x, y + 1] == color) {
+                        dy++;
+                        chainCode.Enqueue(3);
+                        orientation = 3;
+                    }
+
+                    while (x != dx || y != dy) {
+                        byte curDir = 1;
+                        var translated = translate(dx, dy, (orientation+ 4 + curDir) % 4);
+                        while (!(translated.Item1 > 0 && translated.Item1 < image.GetLength(0) &&
+                            translated.Item2 > 0 && translated.Item2 < image.GetLength(1) &&
+                            image[translated.Item1, translated.Item2] == color)) {
+                            curDir--;
+                            curDir %= 4;
+                            translated = translate(dx, dy, (orientation + curDir) % 4);
+                        }
+                        orientation += 4 + curDir;
+                        orientation %= 4;
+                        chainCode.Enqueue(orientation);
+                        dx = translated.Item1;
+                        dy = translated.Item2;
+                    }
+
+                    result.Add(color, chainCode.ToArray());
+                }
+
+            return result;
+        }
+
+        private static Tuple<int, int> translate(int x, int y, int orientation) {
+            switch (orientation) {
+                case 0: return new Tuple<int, int>(x + 1, y);
+                case 1: return new Tuple<int, int>(x, y - 1);
+                case 2: return new Tuple<int, int>(x - 1, y);
+                case 3: return new Tuple<int, int>(x, y + 1);
+                default: return new Tuple<int, int>(x, y);
+            }
+        }
+
+
+        /// <summary>
+        /// Calculates the perimeter of every object in a labeled image.
+        /// </summary>
+        /// <param name="image">A labeled image to process</param>
+        /// <returns>A Dictionary with perimeter per color label</returns>
+        public static Dictionary<Color, int> Perimeter(this Color[,] image) {
+            return image.ChainCode().ToDictionary(x => x.Key, x => x.Value.Count());
+        }
+
     }
 }
