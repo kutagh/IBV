@@ -67,8 +67,8 @@ namespace INFOIBV {
         /// <returns>A transformed gray scale Color 2D array of the image</returns>
         public static Color[,] Transform(this Color[,] image, Func<Color, Color> transformer) {
             var result = new Color[image.GetLength(0), image.GetLength(1)];
-            for (int x = 0; x < image.GetLength(0); x++)
-                for (int y = 0; y < image.GetLength(1); y++)
+            for ( int x = 0; x < image.GetLength(0); x++ )
+                for ( int y = 0; y < image.GetLength(1); y++ )
                     result[x, y] = transformer(image[x, y]); ;
             return result;
         }
@@ -105,11 +105,11 @@ namespace INFOIBV {
         /// <param name="op">Operator function that takes a color from both images and produces a result color</param>
         /// <returns>Color 2D array that represents the image after operator has been applied</returns>
         public static Color[,] Op(Color[,] first, Color[,] second, Func<Color, Color, Color> op) {
-            if (first.GetLength(0) != second.GetLength(0) || first.GetLength(1) != second.GetLength(1))
+            if ( first.GetLength(0) != second.GetLength(0) || first.GetLength(1) != second.GetLength(1) )
                 throw new ArgumentException("Dimensions of the two images do not match");
             var result = new Color[first.GetLength(0), first.GetLength(1)];
-            for (int x = 0; x < first.GetLength(0); x++)
-                for (int y = 0; y < first.GetLength(1); y++)
+            for ( int x = 0; x < first.GetLength(0); x++ )
+                for ( int y = 0; y < first.GetLength(1); y++ )
                     result[x, y] = op(first[x, y], second[x, y]);
             return result;
         }
@@ -139,11 +139,11 @@ namespace INFOIBV {
         public static Color[,] ApplyKernel(this Color[,] image, double[,] kernel, Func<double[,], double> functor, Func<double, double, double> transformator, double defaultValue = 0) {
             var result = new Color[image.GetLength(0), image.GetLength(1)];
             int middleX = kernel.GetLength(0) / 2, middleY = kernel.GetLength(1) / 2;
-            for (int x = 0; x < image.GetLength(0); x++) // Image iteration
-                for (int y = 0; y < image.GetLength(1); y++) {
+            for ( int x = 0; x < image.GetLength(0); x++ ) // Image iteration
+                for ( int y = 0; y < image.GetLength(1); y++ ) {
                     var section = new double[kernel.GetLength(0), kernel.GetLength(1)];
-                    for (int dx = 0; dx < kernel.GetLength(0); dx++) // Kernel iteration
-                        for (int dy = 0; dy < kernel.GetLength(1); dy++) {
+                    for ( int dx = 0; dx < kernel.GetLength(0); dx++ ) // Kernel iteration
+                        for ( int dy = 0; dy < kernel.GetLength(1); dy++ ) {
                             int curX = x + dx - middleX, curY = y + dy - middleY; // Shorthand for current position
                             if ( curX < 0 || curX >= image.GetLength(0) || curY < 0 || curY >= image.GetLength(1) )
                                 section[dx, dy] = defaultValue; // Outside of image boundary, use default value that shouldn't interfere with kernel operation
@@ -262,6 +262,7 @@ namespace INFOIBV {
         /// <returns>Dictionary with area per color</returns>
         public static Dictionary<Color, int> Areas(this Color[,] image) {
             var result = new Dictionary<Color, int>();
+<<<<<<< Updated upstream
             var background = Color.FromArgb(0,0,0);
             var temp = new Color[image.GetLength(0), image.GetLength(1)];
             Array.Copy(image, temp, image.Length);
@@ -270,15 +271,28 @@ namespace INFOIBV {
                     // Only process colors we haven't encountered yet.
                     if (temp[x, y] == background || result.ContainsKey(temp[x,y])) continue;
                     Color color = temp[x, y];
+=======
+            var background = Color.FromArgb(0, 0, 0);
+            for ( int x = 0; x < image.GetLength(0); x++ )
+                for ( int y = 0; y < image.GetLength(1); y++ ) {
+                    // Only process colors we haven't encountered yet.
+                    if ( image[x, y] == background || image[x, y].A == 128 || result.ContainsKey(image[x, y]) ) continue;
+                    Color color = image[x, y];
+>>>>>>> Stashed changes
                     int total = 0;
                     var queue = new Queue<Tuple<int, int>>();
                     queue.Enqueue(new Tuple<int, int>(x, y));
-                    while (queue.Count > 0) {
+                    while ( queue.Count > 0 ) {
                         var current = queue.Dequeue();
                         int dx = current.Item1;
                         int dy = current.Item2;
+<<<<<<< Updated upstream
                         if (dx < 0 || dx >= temp.GetLength(0) || dy < 0 || dy >= temp.GetLength(1) 
                             || temp[dx, dy] != color) continue;
+=======
+                        if ( dx < 0 || dx >= image.GetLength(0) || dy < 0 || dy >= image.GetLength(1)
+                            || image[dx, dy].ToArgb() != color.ToArgb() ) continue;
+>>>>>>> Stashed changes
                         total++;
                         temp[dx, dy] = background;
                         queue.Enqueue(new Tuple<int, int>(dx + 1, dy));
@@ -300,35 +314,34 @@ namespace INFOIBV {
         /// <returns>A Dictionary with chain codes per color label</returns>
         public static Dictionary<Color, int[]> ChainCode(this Color[,] image) {
             var result = new Dictionary<Color, int[]>();
-            var background = Color.FromArgb(0,0,0);
-            for (int x = 0; x < image.GetLength(0); x++)
-                for (int y = 0; y < image.GetLength(1); y++) {
+            var background = Color.FromArgb(0, 0, 0);
+            for ( int x = 0; x < image.GetLength(0); x++ )
+                for ( int y = 0; y < image.GetLength(1); y++ ) {
                     // Only process colors we haven't encountered yet.
-                    if (image[x, y] == background || result.ContainsKey(image[x, y])) continue;
+                    if ( image[x, y] == background || result.ContainsKey(image[x, y]) ) continue;
                     Color color = image[x, y];
                     var chainCode = new Queue<int>();
                     int orientation = 0;
                     int dx = x, dy = y;
                     // We have the top-left pixel of the image, so no pixel to the left or top of it.
-                    if (x < 255 && image[x + 1, y] == color) {
+                    if ( x < 255 && image[x + 1, y] == color ) {
                         dx++;
                         chainCode.Enqueue(0);
-                    }
-                    else if (y < 255 && image[x, y + 1] == color) {
+                    } else if ( y < 255 && image[x, y + 1] == color ) {
                         dy++;
                         chainCode.Enqueue(3);
                         orientation = 3;
                     }
 
-                    while (x != dx || y != dy) {
+                    while ( x != dx || y != dy ) {
                         byte curDir = 1;
-                        var translated = translate(dx, dy, (orientation+ 4 + curDir) % 4);
-                        while (!(translated.Item1 > 0 && translated.Item1 < image.GetLength(0) &&
+                        var translated = translate(dx, dy, ( orientation + 4 + curDir ) % 4);
+                        while ( !( translated.Item1 > 0 && translated.Item1 < image.GetLength(0) &&
                             translated.Item2 > 0 && translated.Item2 < image.GetLength(1) &&
-                            image[translated.Item1, translated.Item2] == color)) {
+                            image[translated.Item1, translated.Item2] == color ) ) {
                             curDir--;
                             curDir %= 4;
-                            translated = translate(dx, dy, (orientation + curDir) % 4);
+                            translated = translate(dx, dy, ( orientation + curDir ) % 4);
                         }
                         orientation += 4 + curDir;
                         orientation %= 4;
@@ -344,7 +357,7 @@ namespace INFOIBV {
         }
 
         private static Tuple<int, int> translate(int x, int y, int orientation) {
-            switch (orientation) {
+            switch ( orientation ) {
                 case 0: return new Tuple<int, int>(x + 1, y);
                 case 1: return new Tuple<int, int>(x, y - 1);
                 case 2: return new Tuple<int, int>(x - 1, y);
@@ -394,24 +407,6 @@ namespace INFOIBV {
                 }
             }
             return dict;
-        }
-
-        public static Dictionary<Color, int> MomentOfOrder(this Color[,] image, int p, int q) {
-
-            Dictionary<Color, int> result = new Dictionary<Color,int>();
-
-            for ( int i = 0; i < image.GetLength(0); i++ ) {
-                for ( int j = 0; j < image.GetLength(1); j++ ) {
-                    if ( image[i, j].R != 0 ) {
-                        if ( !result.ContainsKey(image[i, j]) )
-                            result.Add(image[i, j], 0);
-
-                        result[image[i, j]] += (int)Math.Pow(i, p) * (int)Math.Pow(j, q);
-                    }
-                }
-            }
-
-            return result;
         }
 
     }

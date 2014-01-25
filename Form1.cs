@@ -102,7 +102,10 @@ namespace INFOIBV {
 
         Labelling:
             image = image.CountObjects();
+            
             Dictionary<Color, Tuple<double, double>> centoids = image.Centoids();
+            Dictionary<Color, int> area = image.Areas();
+            Dictionary<Color, int> momOrder = image.MomentOfOrder(0, 0);
             goto End;
 
         Dilate:
