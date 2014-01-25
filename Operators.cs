@@ -246,5 +246,44 @@ namespace INFOIBV {
 
 
         }
+
+        /// <summary>
+        /// Converts an image into a dictionary of areas. Warning: Changes alpha from 255 to 128...
+        /// </summary>
+        /// <param name="image">Image to process</param>
+        /// <returns>Dictionary with area per color</returns>
+        public static Dictionary<Color, int> Area(this Color[,] image) {
+            var result = new Dictionary<Color, int>();
+            var background = Color.FromArgb(0,0,0);
+            for (int x = 0; x < image.GetLength(0); x++)
+                for (int y = 0; y < image.GetLength(1); y++) {
+                    // Only process colors we haven't encountered yet.
+                    if (image[x, y] == background || image[x,y].A == 128 || result.ContainsKey(image[x,y])) continue;
+                    Color color = image[x, y];
+                    int total = 0;
+                    var queue = new Queue<Tuple<int, int>>();
+                    queue.Enqueue(new Tuple<int, int>(x, y));
+                    while (queue.Count > 0) {
+                        var current = queue.Dequeue();
+                        int dx = current.Item1;
+                        int dy = current.Item2;
+                        var ic = image[dx, dy].ToArgb();
+                        var cc = color.ToArgb();
+                        var lol = ic + cc;
+                        if (dx < 0 || dx >= image.GetLength(0) || dy < 0 || dy >= image.GetLength(1) 
+                            || image[dx, dy].ToArgb() != color.ToArgb()) continue;
+                        total++;
+                        image[dx, dy] = Color.FromArgb(128, color);
+                        queue.Enqueue(new Tuple<int, int>(dx + 1, dy));
+                        queue.Enqueue(new Tuple<int, int>(dx - 1, dy));
+                        queue.Enqueue(new Tuple<int, int>(dx, dy + 1));
+                        queue.Enqueue(new Tuple<int, int>(dx, dy - 1));
+                    }
+
+                    result.Add(color, total);
+                }
+
+            return result;
+        }
     }
 }

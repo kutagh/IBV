@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -73,7 +74,7 @@ namespace INFOIBV {
             goto Erode;
 
         Labelling:
-            image = image.CountObjects();
+            image = image.CountObjects();            
             goto End;
 
         Dilate:
@@ -107,8 +108,8 @@ namespace INFOIBV {
                 OutputImage.Save(saveImageDialog.FileName);                 // Save the output image
         }
 
-        
 
-        
+
+
     }
 }
