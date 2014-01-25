@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace INFOIBV {
@@ -83,7 +84,7 @@ namespace INFOIBV {
                 return Color.FromArgb(transformed, transformed, transformed);
             });
         }
-        
+
         /// <summary>
         /// Generic operator function that combines two images into a new image.
         /// </summary>
@@ -130,14 +131,14 @@ namespace INFOIBV {
                 for (int y = 0; y < image.GetLength(1); y++) {
                     var section = new double[kernel.GetLength(0), kernel.GetLength(1)];
                     for (int dx = 0; dx < kernel.GetLength(0); dx++)
-                        for (int dy = 0; dy < kernel.GetLength(1); dy++){
+                        for (int dy = 0; dy < kernel.GetLength(1); dy++) {
                             int curX = x + dx - middleX, curY = y + dy - middleY;
                             if (curX < 0 || curX >= image.GetLength(0) || curY < 0 || curY >= image.GetLength(1))
                                 section[dx, dy] = defaultValue;
                             else
                                 section[dx, dy] = transformator(image[x + dx - middleX, y + dy - middleY].R, kernel[dx, dy]);
                         }
-                    var res = (int)functor(section);
+                    var res = (int) functor(section);
                     result[x, y] = Color.FromArgb(res, res, res);
                 }
             return result;
@@ -163,5 +164,80 @@ namespace INFOIBV {
             return ApplyKernel(image, structuringElement, Functors.KernelSampleToValue.Min, Functors.DoubleToDouble.Threshold(double.MaxValue), double.MaxValue);
         }
 
+        /// <summary>
+        /// Labels the objects.
+        /// </summary>
+        /// <param name="image">Image to label, binary with 0=background & 1=object</param>
+        /// <returns>A labeled image</returns>
+        public static Color[,] CountObjects(this Color[,] image) {
+            // Copy to a separate array to prevent modifying the original image.
+            Color[,] result = new Color[image.GetLength(0), image.GetLength(1)];
+            Array.Copy(image, result, image.Length);
+            int n = 0;
+            for (int i = 0; i < result.GetLength(0); i++) {
+                for (int j = 0; j < result.GetLength(1); j++) {
+                    if (result[i, j].R == 1) { 
+                        int greyVal = n++ % 254 + 2; // Just in case...
+                        floodfill(result, i, j, Color.FromArgb(greyVal, greyVal, greyVal));
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Flood fill an object with a certain color value.
+        /// </summary>
+        /// <param name="image">Image to modify</param>
+        /// <param name="row">X position of object origin pixel</param>
+        /// <param name="col">Y position of object origin pixel</param>
+        /// <param name="color">Color to assign to object</param>
+        private static void floodfill(Color[,] image, int row, int col, Color color) {
+
+            int rows = image.GetLength(0);
+            int cols = image.GetLength(1);
+
+            // Queue to keep record of positions to traverse
+            Queue<Tuple<int, int>> q = new Queue<Tuple<int, int>>();
+
+            // Directions
+            Tuple<int,int>[] directions = { new Tuple<int,int>(-1,0),
+                                            new Tuple<int,int>( 1,0),
+                                            new Tuple<int,int>(0,-1),
+                                            new Tuple<int,int>( 0,1)  };
+
+            // Enqueue initial pos
+            q.Enqueue(new Tuple<int, int>(row, col));
+
+            // Mark element visited
+            image[row, col] = color;
+
+            while (q.Count != 0) {
+
+                // Pop element
+                Tuple<int, int> processing = q.Dequeue();
+                int r = processing.Item1;
+                int c = processing.Item2;
+
+                // Output region
+                // Not Neccessary
+
+                // Check adjacencies
+                foreach (Tuple<int, int> direction in directions) {
+
+                    int dr = r + direction.Item1;
+                    int dc = c + direction.Item2;
+
+                    if (dr >= 0 && dr < rows && dc >= 0 && dc < cols && image[dr, dc].R == 1) {
+                        q.Enqueue(new Tuple<int, int>(dr, dc));
+                        image[dr, dc] = color; // Mark as visited
+                    }
+
+                }
+
+            }
+
+
+        }
     }
 }

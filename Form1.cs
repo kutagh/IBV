@@ -60,20 +60,20 @@ namespace INFOIBV {
 
         Grayscale:
             // Gray scale
-            image = image.Transform(Functors.ColorToColor.ToGrayScaleGreen);
-            //goto End;
+            image = image.Transform(Functors.ColorToColor.ToGrayScale);
             goto NegativeThreshold;
-            //goto Dilate;
+            goto End;
+            goto Dilate;
 
         NegativeThreshold:
             // Negative threshold
-            image = image.Threshold(5, 0, 255);
-            //goto End;
+            image = image.Threshold(200, 0, 1);
             goto Labelling;
-            //goto Erode;
+            goto End;
+            goto Erode;
 
         Labelling:
-            CountObjects(image);
+            image = image.CountObjects();
             goto End;
 
         Dilate:
@@ -107,73 +107,8 @@ namespace INFOIBV {
                 OutputImage.Save(saveImageDialog.FileName);                 // Save the output image
         }
 
-        int numObjects;
+        
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="image"></param>
-        void CountObjects(Color[,] image) {
-            int n = 0;
-            for ( int i = 0; i < image.GetLength(0); i++ ) {
-                for ( int j = 0; j < image.GetLength(1); j++ ) {
-                    if ( image[i, j] == Color.FromArgb(0, 0, 0) ) {
-                        int greyVAl = n * 5 + 1;
-                        floodfill(image, i, j, Color.FromArgb(greyVAl, greyVAl, greyVAl));
-                        n++;
-                    }
-                }
-            }
-        }
-
-        private void floodfill(Color[,] image, int row, int col, Color color) {
-
-            Color black = Color.FromArgb(0,0,0);
-
-            int rows = image.GetLength(0);
-            int cols = image.GetLength(1);
-
-            // Queue to keep record of positions to traverse
-            Queue<Tuple<int, int>> q = new Queue<Tuple<int, int>>();
-
-            // Directions
-            Tuple<int,int>[] directions = { new Tuple<int,int>(-1,0),
-                                            new Tuple<int,int>( 1,0),
-                                            new Tuple<int,int>(0,-1),
-                                            new Tuple<int,int>( 0,1)  };
-
-            // Enqueue initial pos
-            q.Enqueue(new Tuple<int, int>(row, col));
-
-            // Mark element visited
-            image[row, col] = color;
-
-            while ( q.Count != 0 ) {
-
-                // Pop element
-                Tuple<int, int> processing = q.Dequeue();
-                int r = processing.Item1;
-                int c = processing.Item2;
-
-                // Output region
-                // Not Neccessary
-
-                // Check adjacencies
-                foreach ( Tuple<int, int> direction in directions ) {
-
-                    int dr = r + direction.Item1;
-                    int dc = c + direction.Item2;
-
-                    if ( image[dr, dc] == black && dr < rows && dc < cols ) {
-                        q.Enqueue(new Tuple<int, int>(dr, dc));
-                        image[dr, dc] = color; // Mark as visited
-                    }   
-
-                }
-
-            }
-
-
-        }
+        
     }
 }
