@@ -361,7 +361,7 @@ namespace INFOIBV {
             return image.ChainCode().ToDictionary(x => x.Key, x => x.Value.Count());
         }
 
-        static Dictionary<Color, Tuple<double, double>> Centoids(Color[,] image) {
+        public static Dictionary<Color, Tuple<double, double>> Centoids(this Color[,] image) {
 
             Dictionary<Color, int> area = image.Area();
 
@@ -370,17 +370,20 @@ namespace INFOIBV {
             for ( int i = 0; i < image.GetLength(0); i++ ) {
                 for ( int j = 0; j < image.GetLength(1); j++ ) {
                     if ( image[i, j].R != 0 ) {
-                        if ( dict.ContainsKey(image[i,j])  ) {
+                        if ( !dict.ContainsKey(image[i,j])  ) 
+                            dict.Add(image[i, j], new Tuple<double, double>(0, 0));
 
-                            // Get old vals
-                            double oldX = dict[image[i, j]].Item1;
-                            double oldY = dict[image[i, j]].Item2;
-                            
-                            double newX = oldX + ( (double)i / (double)area[image[i, j]] );
-                            double newY = oldY + ( (double)j / (double)area[image[i, j]] );
+                        // Get old vals
+                        double oldX = dict[image[i, j]].Item1;
+                        double oldY = dict[image[i, j]].Item2;
 
-                            dict[image[i, j]] = new Tuple<double, double>(newX, newY);
-                        }
+                        Color color = Color.FromArgb(image[i,j].R, image[i,j].R, image[i,j].R);
+
+                        double newX = oldX + ( (double)i / (double)area[color] );
+                        double newY = oldY + ( (double)j / (double)area[color] );
+
+                        dict[image[i, j]] = new Tuple<double, double>(newX, newY);
+
                     }
                 }              
             }
