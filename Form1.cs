@@ -101,7 +101,8 @@ namespace INFOIBV {
             goto Erode;
 
         Labelling:
-            image = image.CountObjects();            
+            image = image.CountObjects();
+            Dictionary<Color, Tuple<double, double>> centoids = image.Centoids();
             goto End;
 
         Dilate:
