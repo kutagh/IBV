@@ -368,5 +368,29 @@ namespace INFOIBV {
             return result;
         }
 
+
+        public static Dictionary<Color, int> CentralMoments(this Color[,] image, int p, int q) {
+
+            Dictionary<Color, int> result = new Dictionary<Color, int>();
+            Dictionary<Color, Tuple<double, double>> centroids = image.Centroids();
+
+            for ( int i = 0; i < image.GetLength(0); i++ ) {
+                for ( int j = 0; j < image.GetLength(1); j++ ) {
+                    if ( image[i, j].R != 0 ) {
+                        if ( !result.ContainsKey(image[i, j]) )
+                            result.Add(image[i, j], 0);
+
+                        double xCent = centroids[image[i, j]].Item1;
+                        double yCent = centroids[image[i, j]].Item2;
+
+                        result[image[i, j]] += (int)Math.Pow(i - xCent, p) * (int)Math.Pow(j - yCent, q);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+
     }
 }
