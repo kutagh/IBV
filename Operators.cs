@@ -369,9 +369,9 @@ namespace INFOIBV {
         }
 
 
-        public static Dictionary<Color, int> CentralMoments(this Color[,] image, int p, int q) {
+        public static Dictionary<Color, double> CentralMoments(this Color[,] image, int p, int q) {
 
-            Dictionary<Color, int> result = new Dictionary<Color, int>();
+            Dictionary<Color, double> result = new Dictionary<Color, double>();
             Dictionary<Color, Tuple<double, double>> centroids = image.Centroids();
 
             for ( int i = 0; i < image.GetLength(0); i++ ) {
@@ -383,7 +383,7 @@ namespace INFOIBV {
                         double xCent = centroids[image[i, j]].Item1;
                         double yCent = centroids[image[i, j]].Item2;
 
-                        result[image[i, j]] += (int)Math.Pow(i - xCent, p) * (int)Math.Pow(j - yCent, q);
+                        result[image[i, j]] += Math.Pow(i - xCent, p) * Math.Pow(j - yCent, q);
                     }
                 }
             }
@@ -391,6 +391,24 @@ namespace INFOIBV {
             return result;
         }
 
+        public static Dictionary<Color, double> AxisOfLeastMomentIntertia(this Color[,] image) {
 
+            Dictionary<Color, double> result = new Dictionary<Color, double>();
+            Dictionary<Color, double> mu_11s = image.CentralMoments(1, 1);
+            Dictionary<Color, double> mu_20s = image.CentralMoments(2, 0);
+            Dictionary<Color, double> mu_02s = image.CentralMoments(0, 2);
+
+            foreach ( Color key in mu_11s.Keys ) {
+
+                double mu_11 = mu_11s[key];
+                double mu_20 = mu_20s[key];
+                double mu_02 = mu_02s[key];
+
+                result.Add(key, 0.5 * Math.Atan( (2 * mu_11) / (mu_20 - mu_02 );
+
+            }
+
+            return result;
+        }
     }
 }
