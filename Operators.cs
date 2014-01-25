@@ -361,7 +361,7 @@ namespace INFOIBV {
             return image.ChainCode().ToDictionary(x => x.Key, x => x.Value.Count());
         }
 
-        static Dictionary<Color, Tuple<double, double>> BoundingBox(Color[,] image) {
+        static Dictionary<Color, Tuple<double, double>> Centoids(Color[,] image) {
 
             Dictionary<Color, int> area = image.Area();
 
@@ -370,7 +370,8 @@ namespace INFOIBV {
             for ( int i = 0; i < image.GetLength(0); i++ ) {
                 for ( int j = 0; j < image.GetLength(1); j++ ) {
                     if ( image[i, j].R != 0 ) {
-                        if ( dict[image[i, j]] != null ) {
+                        if ( dict.ContainsKey(image[i,j])  ) {
+
                             // Get old vals
                             double oldX = dict[image[i, j]].Item1;
                             double oldY = dict[image[i, j]].Item2;
