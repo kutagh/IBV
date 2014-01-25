@@ -87,6 +87,17 @@ namespace INFOIBV {
         }
 
         /// <summary>
+        /// Generic operator function that combines two gray scale images into a new gray scale image.
+        /// </summary>
+        /// <param name="first">Color 2D array of the first image</param>
+        /// <param name="second">Color 2D array of the second image</param>
+        /// <param name="op">Operator function that takes a gray scale value from both images and produces a result gray scale value</param>
+        /// <returns>Color 2D array that represents the image after operator has been applied</returns>
+        public static Color[,] Op(Color[,] first, Color[,] second, Func<int, int, int> op) {
+            return Op(first, second, (a, b) => { var v = op(a.R, b.R); return Color.FromArgb(v, v, v); });
+        }
+
+        /// <summary>
         /// Generic operator function that combines two images into a new image.
         /// </summary>
         /// <param name="first">Color 2D array of the first image</param>

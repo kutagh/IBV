@@ -8,7 +8,7 @@ namespace INFOIBV {
     public partial class INFOIBV : Form {
         private Bitmap InputImage;
         private Bitmap OutputImage;
-
+        private int ThresholdValue = 255; // needs to be 1 for binary image operators
         public INFOIBV() {
             InitializeComponent();
         }
@@ -39,8 +39,8 @@ namespace INFOIBV {
             // Setup progress bar
             progressBar.Visible = true;
             progressBar.Minimum = 1;
-            progressBar.Maximum = InputImage.Size.Width * InputImage.Size.Height;
-            progressBar.Value = 1;
+            progressBar.Maximum = 100;
+            progressBar.Value = 33;
             progressBar.Step = 1;
 
             // Copy input Bitmap to array            
@@ -53,8 +53,26 @@ namespace INFOIBV {
             //==========================================================================================
             // Start of own code
             //==========================================================================================
-            //goto NegativeThreshold;
+            goto Test;
+            goto End;
+            goto NegativeThreshold;
             goto Grayscale;
+
+        Test:
+            var red = image.ColorThresholdFunc(ThresholdValue, 0, c => c.R > 100 && c.G < 50 && c.B < 50);
+            var blue = image.ColorThresholdFunc(ThresholdValue, 0, c => c.B > 100 && c.G < 125 && c.R < 50);
+            image = Operators.Op(red, blue, (a, b) => a + b);
+           
+            image = image.Dilate(Kernels.DiamondElement9x9);
+            image = image.Erode (Kernels.DiamondElement9x9);
+            goto End;
+        RedThreshold:
+            image = image.ColorThresholdFunc(ThresholdValue, 0, c => c.R > 100 && c.G < 50 && c.B < 50);
+        goto End;
+        
+        BlueThreshold:
+            image = image.ColorThresholdFunc(ThresholdValue, 0, c => c.B > 100 && c.G < 125 && c.R < 50);
+        goto End;
 
         XDerivate:
             image = image.ApplyKernel(Kernels.XDerivateKernel, Functors.KernelSampleToValue.Sum, Functors.DoubleToDouble.Multiply);
@@ -68,7 +86,7 @@ namespace INFOIBV {
 
         NegativeThreshold:
             // Negative threshold
-            image = image.Threshold(200, 0, 1);
+            image = image.Threshold(200, 0, ThresholdValue);
             goto Labelling;
             goto End;
             goto Erode;
@@ -89,7 +107,7 @@ namespace INFOIBV {
             //==========================================================================================
             // End of own code
             //==========================================================================================
-
+            progressBar.Value = 66;
             // Copy array to output Bitmap
             OutputImage = new Bitmap(InputImage.Size.Width, InputImage.Size.Height); // Create new output image
             for (int x = 0; x < InputImage.Size.Width; x++) {
@@ -97,7 +115,7 @@ namespace INFOIBV {
                     OutputImage.SetPixel(x, y, image[x, y]);               // Set the pixel color at coordinate (x,y)
                 }
             }
-
+            progressBar.Value = 100;
             pictureBox2.Image = OutputImage;                         // Display output image
             progressBar.Visible = false;                                    // Hide progress bar
         }
