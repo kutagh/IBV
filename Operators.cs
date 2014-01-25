@@ -261,36 +261,7 @@ namespace INFOIBV {
         /// <param name="image">Image to process</param>
         /// <returns>Dictionary with area per color</returns>
         public static Dictionary<Color, int> Areas(this Color[,] image) {
-            var result = new Dictionary<Color, int>();
-            var background = Color.FromArgb(0,0,0);
-            var temp = new Color[image.GetLength(0), image.GetLength(1)];
-            Array.Copy(image, temp, image.Length);
-            for (int x = 0; x < temp.GetLength(0); x++)
-                for (int y = 0; y < temp.GetLength(1); y++) {
-                    // Only process colors we haven't encountered yet.
-                    if (temp[x, y] == background || result.ContainsKey(temp[x,y])) continue;
-                    Color color = temp[x, y];
-                    int total = 0;
-                    var queue = new Queue<Tuple<int, int>>();
-                    queue.Enqueue(new Tuple<int, int>(x, y));
-                    while (queue.Count > 0) {
-                        var current = queue.Dequeue();
-                        int dx = current.Item1;
-                        int dy = current.Item2;
-                        if (dx < 0 || dx >= temp.GetLength(0) || dy < 0 || dy >= temp.GetLength(1) 
-                            || temp[dx, dy] != color) continue;
-                        total++;
-                        temp[dx, dy] = background;
-                        queue.Enqueue(new Tuple<int, int>(dx + 1, dy));
-                        queue.Enqueue(new Tuple<int, int>(dx - 1, dy));
-                        queue.Enqueue(new Tuple<int, int>(dx, dy + 1));
-                        queue.Enqueue(new Tuple<int, int>(dx, dy - 1));
-                    }
-
-                    result.Add(color, total);
-                }
-
-            return result;
+            return image.MomentOfOrder(0, 0);
         }
 
         /// <summary>
@@ -368,32 +339,15 @@ namespace INFOIBV {
         /// </summary>
         /// <param name="image"></param>
         /// <returns></returns>
-        public static Dictionary<Color, Tuple<double, double>> Centoids(this Color[,] image) {
+        public static Dictionary<Color, Tuple<double, double>> Centroids(this Color[,] image) {
 
-            Dictionary<Color, int> area = image.Areas();
+            var areas = image.Areas();
+            var xMoments = image.MomentOfOrder(1, 0);
+            var yMoments = image.MomentOfOrder(0, 1);
+            var xCentroids = xMoments.Zip(areas, (a, b) => new KeyValuePair<Color, double>(a.Key, a.Value / b.Value));
+            var yCentroids = yMoments.Zip(areas, (a, b) => new KeyValuePair<Color, double>(a.Key, a.Value / b.Value));
 
-            Dictionary<Color, Tuple<double,double>> dict = new Dictionary<Color, Tuple<double, double>>();
-
-            for ( int i = 0; i < image.GetLength(0); i++ ) {
-                for ( int j = 0; j < image.GetLength(1); j++ ) {
-                    if ( image[i, j].R != 0 ) {
-                        if ( !dict.ContainsKey(image[i, j]) )
-                            dict.Add(image[i, j], new Tuple<double, double>(0, 0));
-
-                        // Get old vals
-                        double oldX = dict[image[i, j]].Item1;
-                        double oldY = dict[image[i, j]].Item2;
-
-                        //Color color = Color.FromArgb(image[i, j].R, image[i, j].R, image[i, j].R);
-
-                        double newX = oldX + ( (double)i / (double)area[image[i, j]] );
-                        double newY = oldY + ( (double)j / (double)area[image[i, j]] );
-
-                        dict[image[i, j]] = new Tuple<double, double>(newX, newY);
-                    }
-                }
-            }
-            return dict;
+            return xCentroids.Zip(yCentroids, (a, b) => new KeyValuePair<Color, Tuple<double, double>>(a.Key, new Tuple<double, double>(a.Value, b.Value))).ToDictionary(x => x.Key, x => x.Value);
         }
 
         public static Dictionary<Color, int> MomentOfOrder(this Color[,] image, int p, int q) {
