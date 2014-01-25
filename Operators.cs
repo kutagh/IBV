@@ -334,6 +334,10 @@ namespace INFOIBV {
             return image.ChainCode().ToDictionary(x => x.Key, x => x.Value.Count());
         }
 
+        public static Dictionary<Color, double> Circularity(this Color[,] image) {
+            return image.Areas().Zip(image.Perimeters(), (A, l) => new KeyValuePair<Color, double>(A.Key, (4 * Math.PI * A.Value) / (l.Value * l.Value))).ToDictionary(x => x.Key, x => x.Value);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -342,10 +346,8 @@ namespace INFOIBV {
         public static Dictionary<Color, Tuple<double, double>> Centroids(this Color[,] image) {
 
             var areas = image.Areas();
-            var xMoments = image.MomentOfOrder(1, 0);
-            var yMoments = image.MomentOfOrder(0, 1);
-            var xCentroids = xMoments.Zip(areas, (a, b) => new KeyValuePair<Color, double>(a.Key, a.Value / b.Value));
-            var yCentroids = yMoments.Zip(areas, (a, b) => new KeyValuePair<Color, double>(a.Key, a.Value / b.Value));
+            var xCentroids = image.MomentOfOrder(1, 0).Zip(areas, (a, b) => new KeyValuePair<Color, double>(a.Key, a.Value / b.Value));
+            var yCentroids = image.MomentOfOrder(0, 1).Zip(areas, (a, b) => new KeyValuePair<Color, double>(a.Key, a.Value / b.Value));
 
             return xCentroids.Zip(yCentroids, (a, b) => new KeyValuePair<Color, Tuple<double, double>>(a.Key, new Tuple<double, double>(a.Value, b.Value))).ToDictionary(x => x.Key, x => x.Value);
         }

@@ -65,10 +65,6 @@ namespace INFOIBV {
             image = image.Dilate(Kernels.DiamondElement9x9);
             image = image.Erode (Kernels.DiamondElement9x9);
             image = image.CountObjects();
-            var areas = image.Areas();
-            var perimeters = image.Perimeters();
-            var circularity = areas.Zip(perimeters, (A, l) => new KeyValuePair<Color,double>(A.Key, (4 * Math.PI * A.Value) / (l.Value * l.Value)));
-            var count = circularity.Count();
             goto End;
         RedThreshold:
             image = image.ColorThresholdFunc(ThresholdValue, 0, c => c.R > 100 && c.G < 50 && c.B < 50);
