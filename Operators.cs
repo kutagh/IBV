@@ -361,5 +361,31 @@ namespace INFOIBV {
             return image.ChainCode().ToDictionary(x => x.Key, x => x.Value.Count());
         }
 
+        static Dictionary<Color, Tuple<double, double>> BoundingBox(Color[,] image) {
+
+            Dictionary<Color, int> area = image.Area();
+
+            Dictionary<Color, Tuple<double,double>> dict = new Dictionary<Color, Tuple<double,double>>();
+
+            for ( int i = 0; i < image.GetLength(0); i++ ) {
+                for ( int j = 0; j < image.GetLength(1); j++ ) {
+                    if ( image[i, j].R != 0 ) {
+                        if ( dict[image[i, j]] != null ) {
+                            // Get old vals
+                            double oldX = dict[image[i, j]].Item1;
+                            double oldY = dict[image[i, j]].Item2;
+                            
+                            double newX = oldX + ( (double)i / (double)area[image[i, j]] );
+                            double newY = oldY + ( (double)j / (double)area[image[i, j]] );
+
+                            dict[image[i, j]] = new Tuple<double, double>(newX, newY);
+                        }
+                    }
+                }              
+            }
+
+            return dict;
+        }
+
     }
 }
