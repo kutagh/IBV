@@ -108,7 +108,7 @@ namespace INFOIBV {
 
         ShowBounds:
             Dictionary<Color, Rectangle> bounds = image.BoundingBox();
-        Dictionary<Color, double> rectularties = image.ObjectRectangularity();
+            Dictionary<Color, double> rectularties = image.Circularity();
             Bitmap img = image.ArrayToBitmap();
             // paint
             using ( Graphics g=Graphics.FromImage(img) )
@@ -117,7 +117,7 @@ namespace INFOIBV {
                     g.SmoothingMode = SmoothingMode.AntiAlias;
                     g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    g.DrawString(String.Format("r-arity: {0}", Math.Round(rectularties[key], 2).ToString()), new Font("Thaoma", 16), Brushes.Green, bounds[key]);
+                    g.DrawString(String.Format("c-arity: {0}", Math.Round(rectularties[key], 2).ToString()), new Font("Thaoma", 16), Brushes.Green, bounds[key]);
 
                 }
 
