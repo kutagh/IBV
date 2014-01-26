@@ -550,27 +550,43 @@ namespace INFOIBV {
         public enum Arity { Circularity, Rectangularity }
 
         public enum Shape { Circle = 0, Triangle = 1, Rectangle = 2}
-        
-        public static List<Color> RecognizeObjectsAs(this Color[,] image, Arity arity, Shape shape) {
 
-            Dictionary<Color, double> arities = image.Circularity();
-            Tuple<double,double>[] ranges = ThresholdValues.Circularities;
-
-            if (arity == Arity.Rectangularity) {
-                    arities = image.ObjectRectangularity();
-                    ranges = ThresholdValues.Rectangularities;
-            }
+        public static Dictionary<Color, Shape> RecognizeObjectsAsShapes(this Color[,] image, Arity arity, Shape shape) {
 
             Dictionary<Color, double> circularities = image.Circularity();
-            List<Color> result = new List<Color>();
+            Dictionary<Color, double> rectangularities = image.ObjectRectangularity();
+            Tuple<double,double>[] circularityRanges = ThresholdValues.Circularities;
+            Tuple<double,double>[] rectangularityRanges = ThresholdValues.Rectangularities;
 
-            foreach ( Color key in arities.Keys ) {
-                double c = arities[key];
-                foreach ( Tuple<double, double> tup in ranges ) {
-                    if ( c >= ranges[(int)shape].Item1 && c <= ranges[(int)shape].Item2 )
-                        result.Add(key);
+            Dictionary<Color, Shape> result = new Dictionary<Color, Shape>();
+
+            foreach ( Color key in circularities.Keys ) {
+
+                double c = circularities[key];
+                double r = rectangularities[key];
+
+                List<int> inRangeOf = new List<int>();
+
+                for ( int i = 0; i < circularityRanges.Length; i++ ) {
+                    double low = circularityRanges[i].Item1;
+                    double high = circularityRanges[i].Item2;
+                    if ( c >= low && c <= high ) {
+                        inRangeOf.Add(i);
+                    }
                 }
+
+                foreach ( int j in inRangeOf ) {
+
+                    double low = rectangularityRanges[j].Item1;
+                    double high = rectangularityRanges[j].Item2;
+
+                    if ( r >= low && r <= high )
+                        result.Add(key, (Shape)j);
+                    
+                }
+
             }
+
 
             return result;
         }
