@@ -528,5 +528,17 @@ namespace INFOIBV {
 
             return OutputImage;
         }
+
+        public static Dictionary<Color, double> ObjectRectangularity(this Color[,] image) {
+            Dictionary<Color, double> result = new Dictionary<Color, double>();
+            Dictionary<Color, int> areas = image.Areas();
+            Dictionary<Color, Rectangle> bounds = image.BoundingBox();
+
+            foreach ( Color key in areas.Keys )
+                result.Add(key, (double)( bounds[key].Height * bounds[key].Width ) / areas[key]);
+
+
+            return result;
+        }
     }
 }

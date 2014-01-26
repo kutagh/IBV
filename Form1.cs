@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace INFOIBV {
     public partial class INFOIBV : Form {
@@ -107,14 +108,23 @@ namespace INFOIBV {
 
         ShowBounds:
             Dictionary<Color, Rectangle> bounds = image.BoundingBox();
+        Dictionary<Color, double> rectularties = image.ObjectRectangularity();
             Bitmap img = image.ArrayToBitmap();
             // paint
             using ( Graphics g=Graphics.FromImage(img) )
-                foreach ( Color key in bounds.Keys )
+                foreach ( Color key in bounds.Keys ) {
                     g.DrawRectangle(new Pen(Color.Red), bounds[key]);
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    g.DrawString(String.Format("r-arity: {0}", Math.Round(rectularties[key], 2).ToString()), new Font("Thaoma", 16), Brushes.Green, bounds[key]);
+
+                }
 
             // convert back
-            image = img.BitmapToArray();            
+            image = img.BitmapToArray();
+
+            
 
             goto End;
 
