@@ -54,18 +54,29 @@ namespace INFOIBV {
             //==========================================================================================
             // Start of own code
             //==========================================================================================
-            //goto Test;
+            goto Test;
             goto GreenScale;
             goto NegativeThreshold;
 
         Test:
             var red = image.ColorThresholdFunc(ThresholdValue, 0, c => c.R > 100 && c.G < 50 && c.B < 50);
             var blue = image.ColorThresholdFunc(ThresholdValue, 0, c => c.B > 100 && c.G < 125 && c.R < 50);
-            image = Operators.Op(red, blue, (a, b) => a + b);
+            var redblue = Operators.Op(red, blue, (a, b) => a + b);
            
-            image = image.Dilate(Kernels.DiamondElement9x9);
-            image = image.Erode (Kernels.DiamondElement9x9);
-            image = image.CountObjects();
+            redblue = redblue.Dilate(Kernels.DiamondElement5x5);
+            redblue = redblue.Erode (Kernels.DiamondElement5x5);
+            redblue = redblue.CountObjects();
+
+            var boundz = redblue.BoundingBox();
+            var tmp = redblue.ArrayToBitmap();
+            using ( Graphics g=Graphics.FromImage( tmp))
+                foreach (Color key in boundz.Keys) {
+                    g.DrawRectangle(new Pen(Color.Red), boundz[key]);
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                }
+            image = tmp.BitmapToArray();
             goto End;
         RedThreshold:
             image = image.ColorThresholdFunc(ThresholdValue, 0, c => c.R > 100 && c.G < 50 && c.B < 50);
@@ -109,6 +120,7 @@ namespace INFOIBV {
         ShowBounds:
             Dictionary<Color, Rectangle> bounds = image.BoundingBox();
             Dictionary<Color, double> rectularties = image.ObjectRectangularity();
+            var circularity = image.Circularity();
             Bitmap img = image.ArrayToBitmap();
             // paint
             using ( Graphics g=Graphics.FromImage(img) )
@@ -117,7 +129,7 @@ namespace INFOIBV {
                     g.SmoothingMode = SmoothingMode.AntiAlias;
                     g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    g.DrawString(String.Format("c-arity: {0}", Math.Round(rectularties[key], 2).ToString()), new Font("Thaoma", 16), Brushes.Green, bounds[key]);
+                    g.DrawString(String.Format("c: {0}", Math.Round(circularity[key], 2).ToString()), new Font("Thaoma", 16), Brushes.Green, bounds[key]);
 
                 }
 

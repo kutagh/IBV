@@ -176,6 +176,7 @@ namespace INFOIBV {
             return ApplyKernel(image, structuringElement, Functors.KernelSampleToValue.Min, Functors.DoubleToDouble.Threshold(double.MaxValue), double.MaxValue);
         }
 
+        static int startValue = 20, stepSize = 5;
         /// <summary>
         /// Labels the objects.
         /// </summary>
@@ -185,17 +186,18 @@ namespace INFOIBV {
             // Copy to a separate array to prevent modifying the original image.
             Color[,] result = new Color[image.GetLength(0), image.GetLength(1)];
             Array.Copy(image, result, image.Length);
-            int gray = 2, r = 0, g = 0, b = 0;
+            int gray = startValue, r = 0, g = 0, b = 0;
             for (int i = 0; i < result.GetLength(0); i++) {
                 for (int j = 0; j < result.GetLength(1); j++) {
                     if (result[i, j].R == 1) {
-                        if (gray > 0) gray++;
-                        if (r > 0) r++;
-                        if (gray > 255) { gray = 0; r = 2; }
-                        if (g > 0) g++;
-                        if (r > 255) { r = 0; g = 2; }
-                        if (b > 0) b++;
-                        if (g > 255) { g = 0; b = 2; }
+                        if (gray > 0) gray+=stepSize;
+                        if (r > 0) r += stepSize;
+                        if (gray > 255) { gray = 0; r = startValue; }
+                        if (g > 0) g += stepSize;
+                        if (r > 255) { r = 0; g = startValue; }
+                        if (b > 0) b += stepSize;
+                        if (g > 255) { g = 0; b = startValue; }
+                        if (b > 255) { b = 0; }
 
                         floodfill(result, i, j, gray > 0 ? Color.FromArgb(gray, gray, gray) : Color.FromArgb(r, g, b));
                     }
@@ -486,9 +488,9 @@ namespace INFOIBV {
                         minY = newY;
                     if (newY > maxY)
                         maxY = newY;
-
                 }
-
+                if (new int[4] { minX, minY, maxX, maxY }.Any(x => x == int.MinValue || x == int.MaxValue))
+                    continue;
                 Rectangle boundingBox = new Rectangle(minX + (int)centroidX, minY + (int)centroidY, Math.Abs(minX) + maxX, Math.Abs(minY) + maxY);
                 result.Add(key, boundingBox);
                 
@@ -545,9 +547,9 @@ namespace INFOIBV {
             return result;
         }
 
-        public static enum Arity { Circularity, Rectangularity }
+        public enum Arity { Circularity, Rectangularity }
 
-        public static enum Shape { Circle = 0, Triangle = 1, Rectangle = 2}
+        public enum Shape { Circle = 0, Triangle = 1, Rectangle = 2}
         
         public static List<Color> RecognizeObjectsAs(this Color[,] image, Arity arity, Shape shape) {
 
