@@ -107,7 +107,14 @@ namespace INFOIBV {
 
         ShowBounds:
             Dictionary<Color, Rectangle> bounds = image.BoundingBox();
-            
+            Bitmap img = image.ArrayToBitmap();
+            // paint
+            using ( Graphics g=Graphics.FromImage(img) )
+                foreach ( Color key in bounds.Keys )
+                    g.DrawRectangle(new Pen(Color.Red), bounds[key]);
+
+            // convert back
+            image = img.BitmapToArray();            
 
             goto End;
 

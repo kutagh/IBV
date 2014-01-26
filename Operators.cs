@@ -490,7 +490,7 @@ namespace INFOIBV {
 
                 }
 
-                Rectangle boundingBox = new Rectangle(minX, minY, Math.Abs(minX) + maxX, Math.Abs(minY) + maxY);
+                Rectangle boundingBox = new Rectangle(minX + (int)centroidX, minY + (int)centroidY, Math.Abs(minX) + maxX, Math.Abs(minY) + maxY);
                 result.Add(key, boundingBox);
                 
             }
@@ -498,6 +498,36 @@ namespace INFOIBV {
 
             return result;
 
+        }
+
+        public static Bitmap ArrayToBitmap(this Color[,] image) {
+
+            int width = image.GetLength(0);
+            int height = image.GetLength(1);
+            Bitmap OutputImage = new Bitmap(width, height); // Create new output image
+
+            for ( int x = 0; x < width; x++ ) {
+                for ( int y = 0; y < height; y++ ) {
+                    OutputImage.SetPixel(x, y, image[x, y]); // Set the pixel color at coordinate (x,y)
+                }
+            }
+
+            return OutputImage;
+        }
+
+        public static Color[,] BitmapToArray(this Bitmap image) {
+
+            int width = image.Size.Width;
+            int height = image.Size.Height;
+            Color[,] OutputImage = new Color[width, height];
+
+            for ( int x = 0; x < width; x++ ) {
+                for ( int y = 0; y < height; y++ ) {
+                    OutputImage[x, y] = image.GetPixel(x, y);
+                }
+            }
+
+            return OutputImage;
         }
     }
 }
