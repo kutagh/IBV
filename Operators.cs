@@ -264,65 +264,6 @@ namespace INFOIBV {
             return image.MomentOfOrder(0, 0);
         }
 
-        public static Dictionary<Color, int[]> ChainCode8Connected(this Color[,] image) {
-            var result = new Dictionary<Color, int[]>();
-            var background = Color.FromArgb(0, 0, 0);
-            for (int x = 0; x < image.GetLength(0); x++)
-                for (int y = 0; y < image.GetLength(1); y++) {
-                    // Only process colors we haven't encountered yet.
-                    if (image[x, y] == background || result.ContainsKey(image[x, y])) continue;
-                    Color color = image[x, y];
-                    var chainCode = new Queue<int>();
-                    int orientation = 0;
-                    int dx = x, dy = y;
-                    // We have the top-left pixel of the image, so no pixel to the left or top of it.
-                    if (x < image.GetLength(0) - 1) {
-                        if (y > 1 && image[x + 1, y - 1] == color) {
-                            dx++;
-                            dy--;
-                            chainCode.Enqueue(1);
-                            orientation = 1;
-                        }
-                        else if (image[x + 1, y] == color) {
-                            dx++;
-                            chainCode.Enqueue(0);
-                        }
-                        else if (y < image.GetLength(1) && image[x + 1, y + 1] == color) {
-                            dx++;
-                            dy++;
-                            chainCode.Enqueue(7);
-                            orientation = 7;
-                        }
-                    }
-                    else if (y < image.GetLength(1) - 1 && image[x, y + 1] == color) {
-                        dy++;
-                        chainCode.Enqueue(6);
-                        orientation = 6;
-                    }
-
-                    while (x != dx || y != dy) {
-                        byte curDir = 3;
-                        var translated = translate8(dx, dy, (orientation + curDir) % 8);
-                        while (!(translated.Item1 > 0 && translated.Item1 < image.GetLength(0) &&
-                            translated.Item2 > 0 && translated.Item2 < image.GetLength(1) &&
-                            image[translated.Item1, translated.Item2] == color)) {
-                            curDir += 7;
-                            curDir %= 8;
-                            translated = translate8(dx, dy, (orientation + curDir) % 8);
-                        }
-                        orientation += curDir;
-                        orientation %= 8;
-                        chainCode.Enqueue(orientation);
-                        dx = translated.Item1;
-                        dy = translated.Item2;
-                    }
-
-                    result.Add(color, chainCode.ToArray());
-                }
-
-            return result;
-        }
-
         /// <summary>
         /// Generates a chain code for every object in the labeled image.
         /// </summary>
@@ -382,28 +323,15 @@ namespace INFOIBV {
                 default: return new Tuple<int, int>(x, y);
             }
         }
-        private static Tuple<int, int> translate8(int x, int y, int orientation) {
-            switch (orientation) {
-                case 0: return new Tuple<int, int>(x + 1, y);
-                case 1: return new Tuple<int, int>(x + 1, y - 1);
-                case 2: return new Tuple<int, int>(x, y - 1);
-                case 3: return new Tuple<int, int>(x - 1, y - 1);
-                case 4: return new Tuple<int, int>(x - 1, y);
-                case 5: return new Tuple<int, int>(x - 1, y + 1);
-                case 6: return new Tuple<int, int>(x, y + 1);
-                case 7: return new Tuple<int, int>(x + 1, y + 1);
-                default: return new Tuple<int, int>(x, y);
-            }
-        }
 
-        static double sqrt2 = Math.Sqrt(2);
+
         /// <summary>
         /// Calculates the perimeter of every object in a labeled image.
         /// </summary>
         /// <param name="image">A labeled image to process</param>
         /// <returns>A Dictionary with perimeter per color label</returns>
-        public static Dictionary<Color, double> Perimeters(this Color[,] image) {
-            return image.ChainCode8Connected().ToDictionary(k => k.Key, x => x.Value.Select(v => v % 2 == 0 ? 1 : sqrt2)).ToDictionary(x => x.Key, x => x.Value.Sum());
+        public static Dictionary<Color, int> Perimeters(this Color[,] image) {
+            return image.ChainCode().ToDictionary(x => x.Key, x => x.Value.Count());
         }
 
         /// <summary>
@@ -470,7 +398,7 @@ namespace INFOIBV {
             return result;
         }
 
-        public static Dictionary<Color, double> AxisOfLeastMomentIntertia(this Color[,] image) {
+        public static Dictionary<Color, double> AxisOfLeastMomentInertia(this Color[,] image) {
 
             Dictionary<Color, double> result = new Dictionary<Color, double>();
             Dictionary<Color, double> mu_11s = image.CentralMoments(1, 1);
@@ -506,7 +434,7 @@ namespace INFOIBV {
             Dictionary<Color, Tuple<int, int>> firstPixels = image.FirstPixels();
             Dictionary<Color, int[]> chainCode = image.ChainCode();
             Dictionary<Color, List<Tuple<int,int>>> borders = new Dictionary<Color, List<Tuple<int, int>>>();
-            Dictionary<Color, double> thetas = image.AxisOfLeastMomentIntertia();
+            Dictionary<Color, double> thetas = image.AxisOfLeastMomentInertia();
             Dictionary<Color, Tuple<double, double>> centroids = image.Centroids();
 
             Dictionary<Color, Rectangle> result = new Dictionary<Color, Rectangle>();
@@ -599,6 +527,50 @@ namespace INFOIBV {
             }
 
             return OutputImage;
+        }
+
+        public static Dictionary<Color, double> ObjectRectangularity(this Color[,] image) {
+            Dictionary<Color, double> result = new Dictionary<Color, double>();
+            Dictionary<Color, int> areas = image.Areas();
+            Dictionary<Color, Rectangle> bounds = image.BoundingBox();
+
+            foreach ( Color key in areas.Keys )
+                result.Add(key, areas[key] / (double)( bounds[key].Height * bounds[key].Width ) );
+
+            /*
+            Dictionary<Color, Rectangle> bounds = image.BoundingBox();
+            Dictionary<Color, int> areas = image.Areas();
+            Dictionary<Color, double> result = bounds.ToDictionary(x => x.Key, x => (double)area[x.Key] / (double)( x.Value.Width * x.Value.Height ));*/
+
+            return result;
+        }
+
+        public static enum Arity { Circularity, Rectangularity }
+
+        public static enum Shape { Circle = 0, Triangle = 1, Rectangle = 2}
+        
+        public static List<Color> RecognizeObjectsAs(this Color[,] image, Arity arity, Shape shape) {
+
+            Dictionary<Color, double> arities = image.Circularity();
+            Tuple<double,double>[] ranges = ThresholdValues.Circularities;
+
+            if (arity == Arity.Rectangularity) {
+                    arities = image.ObjectRectangularity();
+                    ranges = ThresholdValues.Rectangularities;
+            }
+
+            Dictionary<Color, double> circularities = image.Circularity();
+            List<Color> result = new List<Color>();
+
+            foreach ( Color key in arities.Keys ) {
+                double c = arities[key];
+                foreach ( Tuple<double, double> tup in ranges ) {
+                    if ( c >= ranges[(int)shape].Item1 && c <= ranges[(int)shape].Item2 )
+                        result.Add(key);
+                }
+            }
+
+            return result;
         }
     }
 }

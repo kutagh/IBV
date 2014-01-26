@@ -91,7 +91,7 @@ namespace INFOIBV {
 
         NegativeThreshold:
             // Negative threshold
-            image = image.Threshold(5, 1, 0);
+            image = image.Threshold(3, 1, 0);
             //image = image.Threshold(200, 0, 1);
             goto Labelling;
             goto End;
@@ -108,7 +108,7 @@ namespace INFOIBV {
 
         ShowBounds:
             Dictionary<Color, Rectangle> bounds = image.BoundingBox();
-            Dictionary<Color, double> rectularties = image.Circularity();
+            Dictionary<Color, double> rectularties = image.ObjectRectangularity();
             Bitmap img = image.ArrayToBitmap();
             // paint
             using ( Graphics g=Graphics.FromImage(img) )
@@ -120,6 +120,21 @@ namespace INFOIBV {
                     g.DrawString(String.Format("c-arity: {0}", Math.Round(rectularties[key], 2).ToString()), new Font("Thaoma", 16), Brushes.Green, bounds[key]);
 
                 }
+
+            /* Circularity range
+            Circle:     0.86 - 1.00
+            Driehoek:   0.78 - 0.85
+            Rectangle:  0.50 - 0.70
+            Octagon:    0.95 - 1.00
+            Diamond:    0.40 - 0.50
+             
+            // Rectangularity range
+            Circle:     0.75 - 0.85
+            Driehoek:   0.55 - 0.65
+            Rectangle:  0.95 - 1.05
+            Octagon:    0.70 - 0.80
+            Diamond:    0.55 - 0.60
+            */
 
             // convert back
             image = img.BitmapToArray();
