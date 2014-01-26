@@ -454,12 +454,11 @@ namespace INFOIBV {
                     //borders.Add(key, listPixels);
                 }
 
-                /* debug
-                foreach (Tuple<int,int> coord in borders[key]) {
+                
+                foreach (Tuple<int,int> c in borders[key]) 
+                    image[c.Item1, c.Item2] = Color.White;
 
-                    image[coord.Item1, coord.Item2] = Color.White;
-
-                */
+                
 			 
                 double theta = thetas[key];
                 double centroidX = centroids[key].Item1;
