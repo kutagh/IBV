@@ -145,12 +145,12 @@ namespace INFOIBV {
                     for (int dx = 0; dx < kernel.GetLength(0); dx++) // Kernel iteration
                         for (int dy = 0; dy < kernel.GetLength(1); dy++) {
                             int curX = x + dx - middleX, curY = y + dy - middleY; // Shorthand for current position
-                            if ( curX < 0 || curX >= image.GetLength(0) || curY < 0 || curY >= image.GetLength(1) )
+                            if (curX < 0 || curX >= image.GetLength(0) || curY < 0 || curY >= image.GetLength(1))
                                 section[dx, dy] = defaultValue; // Outside of image boundary, use default value that shouldn't interfere with kernel operation
                             else // Apply transformator on image grayscale value and kernel value
                                 section[dx, dy] = transformator(image[x + dx - middleX, y + dy - middleY].R, kernel[dx, dy]);
                         }
-                    var res = (int)functor(section); // Kernel has been applied on the pixel, now computing result for said pixel
+                    var res = (int) functor(section); // Kernel has been applied on the pixel, now computing result for said pixel
                     result[x, y] = Color.FromArgb(res, res, res);
                 }
             return result;
@@ -186,16 +186,16 @@ namespace INFOIBV {
             Color[,] result = new Color[image.GetLength(0), image.GetLength(1)];
             Array.Copy(image, result, image.Length);
             int gray = 2, r = 0, g = 0, b = 0;
-            for ( int i = 0; i < result.GetLength(0); i++ ) {
-                for ( int j = 0; j < result.GetLength(1); j++ ) {
-                    if ( result[i, j].R == 1 ) {
-                        if ( gray > 0 ) gray++;
-                        if ( r > 0 ) r++;
-                        if ( gray == 256 ) { gray = 0; r = 2; }
-                        if ( g > 0 ) g++;
-                        if ( r == 256 ) { r = 0; g = 2; }
-                        if ( b > 0 ) b++;
-                        if ( g == 256 ) { g = 0; b = 2; }
+            for (int i = 0; i < result.GetLength(0); i++) {
+                for (int j = 0; j < result.GetLength(1); j++) {
+                    if (result[i, j].R == 1) {
+                        if (gray > 0) gray++;
+                        if (r > 0) r++;
+                        if (gray == 256) { gray = 0; r = 2; }
+                        if (g > 0) g++;
+                        if (r == 256) { r = 0; g = 2; }
+                        if (b > 0) b++;
+                        if (g == 256) { g = 0; b = 2; }
 
                         floodfill(result, i, j, gray > 0 ? Color.FromArgb(gray, gray, gray) : Color.FromArgb(r, g, b));
                     }
@@ -221,9 +221,9 @@ namespace INFOIBV {
 
             // Directions
             Tuple<int,int>[] directions = { new Tuple<int,int>(-1,0),
-                                            new Tuple<int,int>( 1,0),
-                                            new Tuple<int,int>(0,-1),
-                                            new Tuple<int,int>( 0,1)  };
+											new Tuple<int,int>( 1,0),
+											new Tuple<int,int>(0,-1),
+											new Tuple<int,int>( 0,1)  };
 
             // Enqueue initial pos
             q.Enqueue(new Tuple<int, int>(row, col));
@@ -231,7 +231,7 @@ namespace INFOIBV {
             // Mark element visited
             image[row, col] = color;
 
-            while ( q.Count != 0 ) {
+            while (q.Count != 0) {
 
                 // Pop element
                 Tuple<int, int> processing = q.Dequeue();
@@ -242,12 +242,12 @@ namespace INFOIBV {
                 // Not Neccessary
 
                 // Check adjacencies
-                foreach ( Tuple<int, int> direction in directions ) {
+                foreach (Tuple<int, int> direction in directions) {
 
                     int dr = r + direction.Item1;
                     int dc = c + direction.Item2;
 
-                    if ( dr >= 0 && dr < rows && dc >= 0 && dc < cols && image[dr, dc].R == 1 ) {
+                    if (dr >= 0 && dr < rows && dc >= 0 && dc < cols && image[dr, dc].R == 1) {
                         q.Enqueue(new Tuple<int, int>(dr, dc));
                         image[dr, dc] = color; // Mark as visited
                     }
@@ -271,7 +271,7 @@ namespace INFOIBV {
         /// <returns>A Dictionary with chain codes per color label</returns>
         public static Dictionary<Color, int[]> ChainCode(this Color[,] image) {
             var result = new Dictionary<Color, int[]>();
-            var background = Color.FromArgb(0,0,0);
+            var background = Color.FromArgb(0, 0, 0);
             for (int x = 0; x < image.GetLength(0); x++)
                 for (int y = 0; y < image.GetLength(1); y++) {
                     // Only process colors we haven't encountered yet.
@@ -281,11 +281,11 @@ namespace INFOIBV {
                     int orientation = 0;
                     int dx = x, dy = y;
                     // We have the top-left pixel of the image, so no pixel to the left or top of it.
-                    if (x < 255 && image[x + 1, y] == color) {
+                    if (x < image.GetLength(0) - 1 && image[x + 1, y] == color) {
                         dx++;
                         chainCode.Enqueue(0);
                     }
-                    else if (y < 255 && image[x, y + 1] == color) {
+                    else if (y < image.GetLength(1) - 1 && image[x, y + 1] == color) {
                         dy++;
                         chainCode.Enqueue(3);
                         orientation = 3;
@@ -293,15 +293,15 @@ namespace INFOIBV {
 
                     while (x != dx || y != dy) {
                         byte curDir = 1;
-                        var translated = translate(dx, dy, (orientation+ 4 + curDir) % 4);
+                        var translated = translate(dx, dy, (orientation + curDir) % 4);
                         while (!(translated.Item1 > 0 && translated.Item1 < image.GetLength(0) &&
                             translated.Item2 > 0 && translated.Item2 < image.GetLength(1) &&
                             image[translated.Item1, translated.Item2] == color)) {
-                            curDir--;
+                            curDir += 3;
                             curDir %= 4;
                             translated = translate(dx, dy, (orientation + curDir) % 4);
                         }
-                        orientation += 4 + curDir;
+                        orientation += curDir;
                         orientation %= 4;
                         chainCode.Enqueue(orientation);
                         dx = translated.Item1;
@@ -334,6 +334,11 @@ namespace INFOIBV {
             return image.ChainCode().ToDictionary(x => x.Key, x => x.Value.Count());
         }
 
+        /// <summary>
+        /// Calculates the circularity of every object in a labeled image.
+        /// </summary>
+        /// <param name="image">A labeled image to process</param>
+        /// <returns>A Dictionary with circularity per color label</returns>
         public static Dictionary<Color, double> Circularity(this Color[,] image) {
             return image.Areas().Zip(image.Perimeters(), (A, l) => new KeyValuePair<Color, double>(A.Key, (4 * Math.PI * A.Value) / (l.Value * l.Value))).ToDictionary(x => x.Key, x => x.Value);
         }
@@ -354,15 +359,15 @@ namespace INFOIBV {
 
         public static Dictionary<Color, int> MomentOfOrder(this Color[,] image, int p, int q) {
 
-            Dictionary<Color, int> result = new Dictionary<Color,int>();
+            Dictionary<Color, int> result = new Dictionary<Color, int>();
 
-            for ( int i = 0; i < image.GetLength(0); i++ ) {
-                for ( int j = 0; j < image.GetLength(1); j++ ) {
-                    if ( image[i, j].R != 0 ) {
-                        if ( !result.ContainsKey(image[i, j]) )
+            for (int i = 0; i < image.GetLength(0); i++) {
+                for (int j = 0; j < image.GetLength(1); j++) {
+                    if (image[i, j].R != 0) {
+                        if (!result.ContainsKey(image[i, j]))
                             result.Add(image[i, j], 0);
 
-                        result[image[i, j]] += (int)Math.Pow(i, p) * (int)Math.Pow(j, q);
+                        result[image[i, j]] += (int) Math.Pow(i, p) * (int) Math.Pow(j, q);
                     }
                 }
             }
@@ -376,10 +381,10 @@ namespace INFOIBV {
             Dictionary<Color, double> result = new Dictionary<Color, double>();
             Dictionary<Color, Tuple<double, double>> centroids = image.Centroids();
 
-            for ( int i = 0; i < image.GetLength(0); i++ ) {
-                for ( int j = 0; j < image.GetLength(1); j++ ) {
-                    if ( image[i, j].R != 0 ) {
-                        if ( !result.ContainsKey(image[i, j]) )
+            for (int i = 0; i < image.GetLength(0); i++) {
+                for (int j = 0; j < image.GetLength(1); j++) {
+                    if (image[i, j].R != 0) {
+                        if (!result.ContainsKey(image[i, j]))
                             result.Add(image[i, j], 0);
 
                         double xCent = centroids[image[i, j]].Item1;
@@ -400,13 +405,13 @@ namespace INFOIBV {
             Dictionary<Color, double> mu_20s = image.CentralMoments(2, 0);
             Dictionary<Color, double> mu_02s = image.CentralMoments(0, 2);
 
-            foreach ( Color key in mu_11s.Keys ) {
+            foreach (Color key in mu_11s.Keys) {
 
                 double mu_11 = mu_11s[key];
                 double mu_20 = mu_20s[key];
                 double mu_02 = mu_02s[key];
 
-                result.Add(key, 0.5 * Math.Atan( (2 * mu_11) / (mu_20 - mu_02) ) );
+                result.Add(key, 0.5 * Math.Atan((2 * mu_11) / (mu_20 - mu_02)));
 
             }
 
@@ -417,10 +422,10 @@ namespace INFOIBV {
 
             Dictionary<Color, Tuple<int, int>> result = new Dictionary<Color, Tuple<int, int>>();
 
-            for ( int i = 0; i < image.GetLength(0); i++ ) 
-                for ( int j = 0; j < image.GetLength(1); j++ )
-                    if ( image[i, j] != Color.FromArgb(0, 0, 0) && !result.ContainsKey(image[i,j] ))
-                        result.Add(image[i,j], new Tuple<int,int>(i,j));
+            for (int i = 0; i < image.GetLength(0); i++)
+                for (int j = 0; j < image.GetLength(1); j++)
+                    if (image[i, j] != Color.FromArgb(0, 0, 0) && !result.ContainsKey(image[i, j]))
+                        result.Add(image[i, j], new Tuple<int, int>(i, j));
 
             return result;
         }
@@ -429,35 +434,35 @@ namespace INFOIBV {
 
             Dictionary<Color, Tuple<int, int>> firstPixels = image.FirstPixels();
             Dictionary<Color, int[]> chainCode = image.ChainCode();
-            Dictionary<Color, List<Tuple<int,int>>> borders = new Dictionary<Color, List<Tuple<int,int>>>();
+            Dictionary<Color, List<Tuple<int,int>>> borders = new Dictionary<Color, List<Tuple<int, int>>>();
             Dictionary<Color, double> thetas = image.AxisOfLeastMomentIntertia();
             Dictionary<Color, Tuple<double, double>> centroids = image.Centroids();
 
-            Dictionary<Color, Rectangle> result = new Dictionary<Color,Rectangle>();
+            Dictionary<Color, Rectangle> result = new Dictionary<Color, Rectangle>();
 
-            foreach ( Color key in chainCode.Keys ) {
+            foreach (Color key in chainCode.Keys) {
 
                 int[] value = chainCode[key];
                 Tuple<int, int> currentPixel = firstPixels[key];
-                List<Tuple<int, int>> listPixels = new List<Tuple<int,int>>();
+                List<Tuple<int, int>> listPixels = new List<Tuple<int, int>>();
                 listPixels.Add(currentPixel);
 
                 borders.Add(key, listPixels);
 
-                for ( int i = 0; i < value.Length; i++ ) {
+                for (int i = 0; i < value.Length; i++) {
                     currentPixel = translate(currentPixel.Item1, currentPixel.Item2, value[i]);
                     borders[key].Add(currentPixel);
                     //borders.Add(key, listPixels);
                 }
 
                 foreach (Tuple<int,int> coord in borders[key]) {
-		 
-                    image[coord.Item1,coord.Item2] = Color.White;
 
-	            }
+                    image[coord.Item1, coord.Item2] = Color.White;
+
+                }
 
                 /*
-                 
+				 
                 double theta = thetas[key];
                 double centroidX = centroids[key].Item1;
                 double centroidY = centroids[key].Item2;
@@ -489,10 +494,10 @@ namespace INFOIBV {
                 result.Add(key, boundingBox);
                 */
             }
-                 
+
 
             return result;
-            
+
         }
     }
 }
