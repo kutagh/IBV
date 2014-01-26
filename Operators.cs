@@ -490,7 +490,7 @@ namespace INFOIBV {
 
                 }
 
-                Rectangle boundingBox = new Rectangle(minX, minY, minX + maxX, minY + maxY);
+                Rectangle boundingBox = new Rectangle(minX, minY, Math.Abs(minX) + maxX, Math.Abs(minY) + maxY);
                 result.Add(key, boundingBox);
                 
             }
