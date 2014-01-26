@@ -425,26 +425,73 @@ namespace INFOIBV {
             return result;
         }
 
-        public static void BoundingBox(this Color[,] image) {
+        public static Dictionary<Color, Rectangle> BoundingBox(this Color[,] image) {
 
             Dictionary<Color, Tuple<int, int>> firstPixels = image.FirstPixels();
             Dictionary<Color, int[]> chainCode = image.ChainCode();
-            Dictionary<Color, Tuple<int,int>> borders = new Dictionary<Color, Tuple<int,int>>();
+            Dictionary<Color, List<Tuple<int,int>>> borders = new Dictionary<Color, List<Tuple<int,int>>>();
+            Dictionary<Color, double> thetas = image.AxisOfLeastMomentIntertia();
+            Dictionary<Color, Tuple<double, double>> centroids = image.Centroids();
+
+            Dictionary<Color, Rectangle> result = new Dictionary<Color,Rectangle>();
 
             foreach ( Color key in chainCode.Keys ) {
 
                 int[] value = chainCode[key];
                 Tuple<int, int> currentPixel = firstPixels[key];
-                borders.Add(key, currentPixel);
+                List<Tuple<int, int>> listPixels = new List<Tuple<int,int>>();
+                listPixels.Add(currentPixel);
+
+                borders.Add(key, listPixels);
 
                 for ( int i = 0; i < value.Length; i++ ) {
                     currentPixel = translate(currentPixel.Item1, currentPixel.Item2, value[i]);
-                    borders.Add(key, currentPixel);
+                    borders[key].Add(currentPixel);
+                    //borders.Add(key, listPixels);
                 }
 
+                foreach (Tuple<int,int> coord in borders[key]) {
+		 
+                    image[coord.Item1,coord.Item2] = Color.White;
 
+	            }
 
+                /*
+                 
+                double theta = thetas[key];
+                double centroidX = centroids[key].Item1;
+                double centroidY = centroids[key].Item2;
+                double sinTheta = Math.Sin(theta);
+                double cosTheta = Math.Cos(theta);
+
+                // Find min max for key
+                int minX= 512, minY= 512, maxX = 0, maxY = 0;
+
+                foreach ( Tuple<int,int> coord in borders[key] ) {
+
+                    double x = coord.Item1 - centroidX;
+                    double y = coord.Item2 - centroidY;
+                    int newX = (int)((cosTheta * x) + ( sinTheta * y ));
+                    int newY = (int)((sinTheta * - 1 * x) + (cosTheta * y));
+
+                    if ( newX < minX )
+                        minX = newX;
+                    if (newX > maxX)
+                        maxX = newX;
+                    if (newY < minY)
+                        minY = newY;
+                    if (newY > maxY)
+                        maxY = newY;
+
+                }
+
+                Rectangle boundingBox = new Rectangle(minX, minY, minX + maxX, minY + maxY);
+                result.Add(key, boundingBox);
+                */
             }
+                 
+
+            return result;
             
         }
     }

@@ -102,6 +102,13 @@ namespace INFOIBV {
             Dictionary<Color, Tuple<double, double>> centroids = image.Centroids();
             Dictionary<Color, int> area = image.Areas();
             Dictionary<Color, int> momOrder = image.MomentOfOrder(0, 0);
+            goto ShowBounds;
+            goto End;
+
+        ShowBounds:
+            Dictionary<Color, Rectangle> bounds = image.BoundingBox();
+            
+
             goto End;
 
         Dilate:
