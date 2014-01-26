@@ -398,7 +398,7 @@ namespace INFOIBV {
             return result;
         }
 
-        public static Dictionary<Color, double> AxisOfLeastMomentIntertia(this Color[,] image) {
+        public static Dictionary<Color, double> AxisOfLeastMomentInertia(this Color[,] image) {
 
             Dictionary<Color, double> result = new Dictionary<Color, double>();
             Dictionary<Color, double> mu_11s = image.CentralMoments(1, 1);
@@ -434,7 +434,7 @@ namespace INFOIBV {
             Dictionary<Color, Tuple<int, int>> firstPixels = image.FirstPixels();
             Dictionary<Color, int[]> chainCode = image.ChainCode();
             Dictionary<Color, List<Tuple<int,int>>> borders = new Dictionary<Color, List<Tuple<int, int>>>();
-            Dictionary<Color, double> thetas = image.AxisOfLeastMomentIntertia();
+            Dictionary<Color, double> thetas = image.AxisOfLeastMomentInertia();
             Dictionary<Color, Tuple<double, double>> centroids = image.Centroids();
 
             Dictionary<Color, Rectangle> result = new Dictionary<Color, Rectangle>();
