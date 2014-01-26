@@ -411,7 +411,7 @@ namespace INFOIBV {
                 double mu_20 = mu_20s[key];
                 double mu_02 = mu_02s[key];
 
-                result.Add(key, 0.5 * Math.Atan((2 * mu_11) / (mu_20 - mu_02)) * (180/Math.PI));
+                result.Add(key, 0.5 * Math.Atan((2 * mu_11) / (mu_20 - mu_02)));// * (180/Math.PI));
             }
 
             return result;
