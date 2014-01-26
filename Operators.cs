@@ -191,11 +191,11 @@ namespace INFOIBV {
                     if (result[i, j].R == 1) {
                         if (gray > 0) gray++;
                         if (r > 0) r++;
-                        if (gray == 256) { gray = 0; r = 2; }
+                        if (gray > 255) { gray = 0; r = 2; }
                         if (g > 0) g++;
-                        if (r == 256) { r = 0; g = 2; }
+                        if (r > 255) { r = 0; g = 2; }
                         if (b > 0) b++;
-                        if (g == 256) { g = 0; b = 2; }
+                        if (g > 255) { g = 0; b = 2; }
 
                         floodfill(result, i, j, gray > 0 ? Color.FromArgb(gray, gray, gray) : Color.FromArgb(r, g, b));
                     }
