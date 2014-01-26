@@ -455,14 +455,13 @@ namespace INFOIBV {
                     //borders.Add(key, listPixels);
                 }
 
+                /* debug
                 foreach (Tuple<int,int> coord in borders[key]) {
 
                     image[coord.Item1, coord.Item2] = Color.White;
 
-                }
-
-                /*
-				 
+                */
+			 
                 double theta = thetas[key];
                 double centroidX = centroids[key].Item1;
                 double centroidY = centroids[key].Item2;
@@ -472,7 +471,14 @@ namespace INFOIBV {
                 // Find min max for key
                 int minX= 512, minY= 512, maxX = 0, maxY = 0;
 
+                double m10 = image.MomentOfOrder(1, 0)[key];
+                double m00 = image.MomentOfOrder(0, 1)[key];
+
+                double av = m10 / m00;
+
                 foreach ( Tuple<int,int> coord in borders[key] ) {
+
+                    
 
                     double x = coord.Item1 - centroidX;
                     double y = coord.Item2 - centroidY;
@@ -492,7 +498,7 @@ namespace INFOIBV {
 
                 Rectangle boundingBox = new Rectangle(minX, minY, minX + maxX, minY + maxY);
                 result.Add(key, boundingBox);
-                */
+                
             }
 
 
