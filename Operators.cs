@@ -535,7 +535,7 @@ namespace INFOIBV {
             Dictionary<Color, Rectangle> bounds = image.BoundingBox();
 
             foreach ( Color key in areas.Keys )
-                result.Add(key, (double)( bounds[key].Height * bounds[key].Width ) / areas[key]);
+                result.Add(key, areas[key] / (double)( bounds[key].Height * bounds[key].Width ) );
 
 
             return result;
