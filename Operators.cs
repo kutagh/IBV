@@ -411,8 +411,7 @@ namespace INFOIBV {
                 double mu_20 = mu_20s[key];
                 double mu_02 = mu_02s[key];
 
-                result.Add(key, 0.5 * Math.Atan((2 * mu_11) / (mu_20 - mu_02)));
-
+                result.Add(key, 0.5 * Math.Atan((2 * mu_11) / (mu_20 - mu_02)) * (180/Math.PI));
             }
 
             return result;
@@ -471,11 +470,6 @@ namespace INFOIBV {
                 // Find min max for key
                 int minX= 512, minY= 512, maxX = 0, maxY = 0;
 
-                double m10 = image.MomentOfOrder(1, 0)[key];
-                double m00 = image.MomentOfOrder(0, 1)[key];
-
-                double av = m10 / m00;
-
                 foreach ( Tuple<int,int> coord in borders[key] ) {
 
                     
@@ -483,7 +477,7 @@ namespace INFOIBV {
                     double x = coord.Item1 - centroidX;
                     double y = coord.Item2 - centroidY;
                     int newX = (int)((cosTheta * x) + ( sinTheta * y ));
-                    int newY = (int)((sinTheta * - 1 * x) + (cosTheta * y));
+                    int newY = (int)((-1 * sinTheta * x) + (cosTheta * y));
 
                     if ( newX < minX )
                         minX = newX;
